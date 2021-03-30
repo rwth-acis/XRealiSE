@@ -1,22 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#region
+
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
+using MySql.EntityFrameworkCore.DataAnnotations;
+
+#endregion
 
 namespace XRealiSE_DBConnection.data
 {
+    [MySqlCharset("utf8")]
     public class KeywordInRepository
     {
         public enum KeywordInRepositoryType
         {
-            InReadme, Classname
+            InReadme,
+            Classname
         }
-        [Required]
-        public KeywordInRepositoryType Type { get; set; }
+
+        [Required] public KeywordInRepositoryType Type { get; set; }
+
         public double Weight { get; set; }
         public long KeywordId { get; set; }
         public long GitHubRepositoryId { get; set; }
