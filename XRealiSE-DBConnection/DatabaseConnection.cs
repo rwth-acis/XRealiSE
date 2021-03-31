@@ -24,7 +24,7 @@ namespace XRealiSE_DBConnection
         /// <param name="databaseHost">The host for the MySQL server</param>
         /// <param name="databasePort">The connection port for the MySQL server</param>
         public DatabaseConnection(string databaseUser = "root", string databasePassword = "",
-            string databaseName = "xrealise2", string databaseHost = "localhost", uint databasePort = 3306)
+            string databaseName = "xrealise", string databaseHost = "localhost", uint databasePort = 3306)
         {
             _databaseConnectionString = new MySqlConnectionStringBuilder
             {
@@ -70,19 +70,22 @@ namespace XRealiSE_DBConnection
         /// GitHubRepositoryId) the repository data will be updated.
         /// </summary>
         /// <param name="repository">The repository to update or insert</param>
-        public void InsertOrUpdateRepository(ref GitHubRepository repository)
+        /// <returns>If the last commit date was changed and therefore keywords needs to be updated</returns>
+        public bool InsertOrUpdateRepository(ref GitHubRepository repository)
         {
             // Find already existing entry
             GitHubRepository existing = GitHubRepositories.Find(repository.GitHubRepositoryId);
             if (existing == null) // Repository is new => insert
             {
                 GitHubRepositories.Add(repository);
+                return true;
             }
-            else // Repository exists => Replace values in DB with values from reporitory parameter
-            {
-                existing.Update(repository);
-                repository = existing;
-            }
+
+            // Repository exists => Replace values in DB with values from reporitory parameter
+            bool lastCommitChanged = existing.PushedAt != repository.PushedAt;
+            existing.Update(repository);
+            repository = existing;
+            return lastCommitChanged;
         }
 
         /// <summary>

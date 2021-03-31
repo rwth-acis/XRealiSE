@@ -17,18 +17,19 @@ namespace XRealiSE_Crawler
             RootCommand rootCommand = new RootCommand
             {
                 new Option<string>("--github-api-key", "A github api key"),
-                new Option<string>("--mysql-host", "The host for the MySQL server [default: localhost]"),
-                new Option<string>("--mysql-username", "The username for the MySQL database [default: root]"),
-                new Option<string>("--mysql-password", "The password for the MySQL database"),
-                new Option<string>("--mysql-database",
-                    "The name of the database where all data will be stored [default: xrealise]"),
-                new Option<int>("--mysql-port", "The connection port for the MySQL server [default: 3306]")
+                new Option<string>("--mysql-host", () => "localhost", "The host for the MySQL server"),
+                new Option<string>("--mysql-username", () => "root", "The username for the MySQL database"),
+                new Option<string>("--mysql-password", () => "", "The password for the MySQL database"),
+                new Option<string>("--mysql-database", () => "xrealise",
+                    "The name of the database where all data will be stored"),
+                new Option<uint>("--mysql-port", () => 3306, "The connection port for the MySQL server")
             };
 
-            rootCommand.Handler = CommandHandler.Create<string, string, string, string, string, int>(
+            rootCommand.Handler = CommandHandler.Create<string, string, string, string, string, uint>(
                 async (gitHubApiKey, mySqlHost, mySqlUsername, mySqlPassword, mySqlDatabase, mySqlPort) =>
                 {
-                    Crawler crawler = new Crawler(gitHubApiKey);
+                    Crawler crawler = new Crawler(gitHubApiKey, mySqlHost, mySqlUsername, mySqlPassword, mySqlDatabase,
+                        mySqlPort);
                     DateTime before = DateTime.Now;
                     await crawler.Crawl(0, 50000);
                     WriteLine("Crawling done, took {0}. Exiting", DateTime.Now - before);

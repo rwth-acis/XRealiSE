@@ -15,7 +15,7 @@ namespace XRealiSE_DBConnection.data
     [Index(nameof(Name), nameof(Owner), IsUnique = true)]
     public class GitHubRepository
     {
-        [Required] public DateTimeOffset CreatedAt { get; set; }
+        [Required] public DateTime CreatedAt { get; set; }
 
         [Column(TypeName = "varchar(255)")]
         [MySqlCharset("utf8mb4")]
@@ -49,11 +49,11 @@ namespace XRealiSE_DBConnection.data
         [MySqlCharset("utf8")]
         public string Owner { get; set; }
 
-        public DateTimeOffset? PushedAt { get; set; }
+        public DateTime? PushedAt { get; set; }
 
         [Required] public int StargazersCount { get; set; }
 
-        public DateTimeOffset UpdatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
 
         [Required] public int WatchersCount { get; set; }
 

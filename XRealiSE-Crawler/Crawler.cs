@@ -25,19 +25,22 @@ namespace XRealiSE_Crawler
         private int _rateLimit;
         private DatabaseConnection _databaseConnection;
 
-        public Crawler(string apikey)
+        public Crawler(string apikey, string mySqlHost, string mySqlUsername, string mySqlPassword,
+            string mySqlDatabase, uint mySqlPort)
         {
             ProductHeaderValue productHeaderValue = new ProductHeaderValue("xrealise");
-          
+
             _gitHubClient = new GitHubClient(productHeaderValue, new InMemoryCredentialStore(new Credentials(apikey)));
             _repositoryContentsClient =
                 new RepositoryContentsClient(
-                    new ApiConnection(new Connection(productHeaderValue, new InMemoryCredentialStore(new Credentials(apikey)))));
+                    new ApiConnection(new Connection(productHeaderValue,
+                        new InMemoryCredentialStore(new Credentials(apikey)))));
             _crawledRepos = new List<long>();
             _rake = new RakeExtraction(LoadStopWords("SmartStoplist.txt"), 2, 4);
-            
-            _databaseConnection = new DatabaseConnection();
-            
+
+            _databaseConnection =
+                new DatabaseConnection(mySqlUsername, mySqlPassword, mySqlDatabase, mySqlHost, mySqlPort);
+
         }
 
         private static HashSet<string> LoadStopWords(string path)
@@ -119,11 +122,19 @@ namespace XRealiSE_Crawler
             return files.Distinct().ToArray();
         }
 
-
         private async Task<SearchCodeResult> SearchCode(SearchCodeRequest request)
         {
             await WaitForApiLimit(true);
-            return await _gitHubClient.Search.SearchCode(request);
+            try
+            {
+                return await _gitHubClient.Search.SearchCode(request);
+            }
+            catch (AbuseException e)
+            {
+                WriteLine("AbuseException waiting {0} seconds ", e.RetryAfterSeconds);
+                Thread.Sleep(1000 * (e.RetryAfterSeconds.HasValue ? e.RetryAfterSeconds.Value : 60));
+                return await SearchCode(request);
+            }
         }
 
         private async Task<Repository> GetRepository(long repositoryId)
@@ -137,11 +148,24 @@ namespace XRealiSE_Crawler
         /// </summary>
         /// <param name="repo">A Octokit.Repository with informations to store.</param>
         /// <returns>A GitHubRepository with all storable informations from the given Repository</returns>
+        private static DateTime fromDateTimeOffset(DateTimeOffset dateTimeOffset)
+        {
+            return new DateTime(dateTimeOffset.Year, dateTimeOffset.Month, dateTimeOffset.Day, dateTimeOffset.Hour,
+                dateTimeOffset.Minute, dateTimeOffset.Second);
+        }
+
+        private static DateTime? fromDateTimeOffset(DateTimeOffset? dateTimeOffset)
+        {
+            if (dateTimeOffset.HasValue)
+                return fromDateTimeOffset(dateTimeOffset.Value);
+            return null;
+        }
+
         private static GitHubRepository FromCrawled(Repository repo)
         {
             return new GitHubRepository
             {
-                CreatedAt = repo.CreatedAt,
+                CreatedAt = fromDateTimeOffset(repo.CreatedAt),
                 Description = repo.Description?.Length > 255
                     ? repo.Description.Substring(0, 255)
                     : repo.Description,
@@ -155,9 +179,9 @@ namespace XRealiSE_Crawler
                 Name = repo.Name,
                 OpenIssuesCount = repo.OpenIssuesCount,
                 Owner = repo.Owner.Login,
-                PushedAt = repo.PushedAt,
+                PushedAt = fromDateTimeOffset(repo.PushedAt),
                 StargazersCount = repo.StargazersCount,
-                UpdatedAt = repo.UpdatedAt,
+                UpdatedAt = fromDateTimeOffset(repo.UpdatedAt),
                 WatchersCount = repo.WatchersCount
             };
         }
@@ -226,40 +250,51 @@ namespace XRealiSE_Crawler
 
                             GitHubRepository gitHubRepository = FromCrawled(repo);
 
-                            _databaseConnection.InsertOrUpdateRepository(ref gitHubRepository);
+                            bool updatekeywords = _databaseConnection.InsertOrUpdateRepository(ref gitHubRepository);
 
                             Write("[Repository]");
 
-                            string readme = await GetReadmeMd(repo.Id);
-                            string strippedreadme = StripNonAlphanumeric(StripUrls(StripHtml(readme)));
 
-                            if (readme.Length > 0)
+                            if (updatekeywords)
                             {
-                                Dictionary<string, double> keywords = _rake.Run(strippedreadme);
-                                foreach (KeyValuePair<string, double> keyword in keywords)
-                                    if (keyword.Key.Length <= 120)
-                                        _databaseConnection.AddKeywordConnection(gitHubRepository,
-                                            keyword.Key.Trim(),
-                                            KeywordInRepository.KeywordInRepositoryType.InReadme, keyword.Value);
+                                // remove all old keyword links, in case of changed readme
+                                string readme = await GetReadmeMd(repo.Id);
+                                string strippedreadme = StripNonAlphanumeric(StripUrls(StripHtml(readme)));
+
+                                if (readme.Length > 0)
+                                {
+                                    Dictionary<string, double> keywords = _rake.Run(strippedreadme);
+                                    foreach (KeyValuePair<string, double> keyword in keywords)
+                                        if (keyword.Key.Length <= 120)
+                                            _databaseConnection.AddKeywordConnection(gitHubRepository,
+                                                keyword.Key.Trim(),
+                                                KeywordInRepository.KeywordInRepositoryType.InReadme, keyword.Value);
+                                }
+
+                                Write("[Readme]");
+
+                                // remove all old cs file links
+
+                                string[] files = await GetFiles(repo.Id, "cs");
+                                foreach (string filename in files.Where(filename => filename.Length <= 120))
+                                    _databaseConnection.AddKeywordConnection(gitHubRepository, filename,
+                                        KeywordInRepository.KeywordInRepositoryType.Classname);
+
+                                WriteLine("[ClassNames]");
                             }
-
-                            Write("[Readme]");
-
-                            string[] files = await GetFiles(repo.Id, "cs");
-                            foreach (string filename in files.Where(filename => filename.Length <= 120))
-                                _databaseConnection.AddKeywordConnection(gitHubRepository, filename,
-                                    KeywordInRepository.KeywordInRepositoryType.Classname);
-
-                            Write("[ClassNames]");
-
-                            await _databaseConnection.SaveChangesAsync();
-                            WriteLine("[Saved]");
+                            else
+                            {
+                                WriteLine("[RepositoryUnchanged]");
+                            }
                         }
                         else
                         {
                             WriteLine("Already Crawled this run!");
                         }
                     }
+
+                    await _databaseConnection.SaveChangesAsync();
+                    WriteLine("Database Changes Saved");
 
                     if (++request.Page <= 10)
                         result = await SearchCode(request);
