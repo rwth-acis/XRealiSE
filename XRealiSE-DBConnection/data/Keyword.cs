@@ -18,7 +18,8 @@ namespace XRealiSE_DBConnection.data
 
         [Required]
         [Column(TypeName = "varchar(120)")]
-        [MySqlCharset("utf8_bin")]
+        [MySqlCollation("utf8_bin")]
+        [MySqlCharset("utf8")]
         public string Word { get; set; }
 
         public virtual ICollection<KeywordInRepository> KeywordInRepositories { get; set; }

@@ -59,6 +59,10 @@ namespace XRealiSE_DBConnection.data
 
         public virtual ICollection<KeywordInRepository> KeywordInRepositories { get; set; }
 
+        /// <summary>
+        /// Updates the GitHubRepository object fields with the values given in the newValues parameter
+        /// </summary>
+        /// <param name="newValues">The repository with values to replace the local stored</param>
         internal void Update(GitHubRepository newValues)
         {
             CreatedAt = newValues.CreatedAt;
