@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.4" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="5.0.0" />
   </ItemGroup>
 

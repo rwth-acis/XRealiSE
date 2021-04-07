@@ -12,8 +12,14 @@ namespace XRealiSE_DBConnection.data
     {
         public enum KeywordInRepositoryType
         {
-            InReadme,
-            Classname
+            Classname,
+            InReadmeRake1,
+            InReadmeRake2,
+            InReadmeRake3,
+            InReadmeRake4,
+            InReadmeTextRank,
+            InReadmeEdNormal,
+            InReadmeEdMax
         }
 
         [Required] public KeywordInRepositoryType Type { get; set; }

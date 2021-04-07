@@ -12,11 +12,12 @@ namespace XRealiSE_DBConnection
     public sealed class DatabaseConnection : DbContext
     {
         private readonly string _databaseConnectionString;
-        private Dictionary<string, Keyword> _generatedKeywords;
+        private readonly Dictionary<string, Keyword> _generatedKeywords;
 
+        /// <inheritdoc />
         /// <summary>
-        /// Initializes a new DatabaseConnection to the MySQL database specified within the connection
-        /// parameters. This also ensures that a database will be created if none is present.
+        ///     Initializes a new DatabaseConnection to the MySQL database specified within the connection
+        ///     parameters. This also ensures that a database will be created if none is present.
         /// </summary>
         /// <param name="databaseUser">The username for the MySQL database</param>
         /// <param name="databasePassword">The password for the MySQL database</param>
@@ -38,8 +39,8 @@ namespace XRealiSE_DBConnection
             _generatedKeywords = new Dictionary<string, Keyword>();
 
             Database.EnsureCreated();
-            
-            
+
+
             // Generating a local database of keywords because a search for an existing keyword in the DbSet
             // is extremely slow.
             foreach (Keyword keyword in Keywords) _generatedKeywords.Add(keyword.Word, keyword);
@@ -51,6 +52,7 @@ namespace XRealiSE_DBConnection
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.UseLazyLoadingProxies();
             optionsBuilder.UseMySQL(_databaseConnectionString);
         }
 
@@ -66,8 +68,8 @@ namespace XRealiSE_DBConnection
         }
 
         /// <summary>
-        /// Add a new repository the crawled data. If that repository already exists (check will be done on the
-        /// GitHubRepositoryId) the repository data will be updated.
+        ///     Add a new repository the crawled data. If that repository already exists (check will be done on the
+        ///     GitHubRepositoryId) the repository data will be updated.
         /// </summary>
         /// <param name="repository">The repository to update or insert</param>
         /// <returns>If the last commit date was changed and therefore keywords needs to be updated</returns>
@@ -89,8 +91,8 @@ namespace XRealiSE_DBConnection
         }
 
         /// <summary>
-        /// Adds a new keyword connection for a repository to the database. If that connection already exists the
-        /// weight will be updated.
+        ///     Adds a new keyword connection for a repository to the database. If that connection already exists the
+        ///     weight will be updated.
         /// </summary>
         /// <param name="repository">The repository where the keyword belongs to</param>
         /// <param name="keyword">The keyword string</param>

@@ -1,10 +1,10 @@
 ﻿#region
 
 using System;
-using System.Threading.Tasks;
-using static System.Console;
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using System.Threading.Tasks;
+using static System.Console;
 
 #endregion
 
