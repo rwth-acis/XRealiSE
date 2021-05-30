@@ -31,7 +31,9 @@ namespace XRealiSE_Crawler
                     Crawler crawler = new Crawler(gitHubApiKey, mySqlHost, mySqlUsername, mySqlPassword, mySqlDatabase,
                         mySqlPort);
                     DateTime before = DateTime.Now;
+
                     await crawler.Crawl(0, 50000);
+
                     WriteLine("Crawling done, took {0}. Exiting", DateTime.Now - before);
                 });
 

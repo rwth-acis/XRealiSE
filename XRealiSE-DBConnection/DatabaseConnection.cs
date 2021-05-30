@@ -1,8 +1,8 @@
 ﻿#region
 
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
 using XRealiSE_DBConnection.data;
 
 #endregion
@@ -11,7 +11,7 @@ namespace XRealiSE_DBConnection
 {
     public sealed class DatabaseConnection : DbContext
     {
-        private readonly string _databaseConnectionString;
+        public static string DatabaseConnectionString;
         private readonly Dictionary<string, Keyword> _generatedKeywords;
 
         /// <inheritdoc />
@@ -19,41 +19,37 @@ namespace XRealiSE_DBConnection
         ///     Initializes a new DatabaseConnection to the MySQL database specified within the connection
         ///     parameters. This also ensures that a database will be created if none is present.
         /// </summary>
-        /// <param name="databaseUser">The username for the MySQL database</param>
-        /// <param name="databasePassword">The password for the MySQL database</param>
-        /// <param name="databaseName">The name of the database where all data will be stored</param>
-        /// <param name="databaseHost">The host for the MySQL server</param>
-        /// <param name="databasePort">The connection port for the MySQL server</param>
-        public DatabaseConnection(string databaseUser = "root", string databasePassword = "",
-            string databaseName = "xrealise", string databaseHost = "localhost", uint databasePort = 3306)
+        /// <param name="keyWordCache">
+        ///     Cache all existing keywords locally, used by the crawer for faster cheks of existing
+        ///     keywords, used for the crawler
+        /// </param>
+        public DatabaseConnection(bool keyWordCache = false)
         {
-            _databaseConnectionString = new MySqlConnectionStringBuilder
-            {
-                UserID = databaseUser,
-                Password = databasePassword,
-                Database = databaseName,
-                Server = databaseHost,
-                Port = databasePort,
-                CharacterSet = "utf8mb4"
-            }.ConnectionString;
+            if (DatabaseConnectionString == null)
+                throw new InvalidOperationException("DatabaseConnectionString must be set before initialising objects");
+
             _generatedKeywords = new Dictionary<string, Keyword>();
 
             Database.EnsureCreated();
 
-
             // Generating a local database of keywords because a search for an existing keyword in the DbSet
             // is extremely slow.
+            if (!keyWordCache) return;
+
             foreach (Keyword keyword in Keywords) _generatedKeywords.Add(keyword.Word, keyword);
         }
 
         public DbSet<GitHubRepository> GitHubRepositories { get; set; }
         public DbSet<KeywordInRepository> KeywordInRepositories { get; set; }
         public DbSet<Keyword> Keywords { get; set; }
+        public DbSet<SearchIndex> SearchIndex { get; set; }
+        public DbSet<Search> Searches { get; set; }
+        public DbSet<SearchAction> SearchActions { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseLazyLoadingProxies();
-            optionsBuilder.UseMySQL(_databaseConnectionString);
+            optionsBuilder.UseMySQL(DatabaseConnectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -63,6 +59,10 @@ namespace XRealiSE_DBConnection
             modelBuilder.Entity<GitHubRepository>().Property(e => e.CreatedAt)
                 .HasDefaultValueSql("'0000-00-00 00:00:00'");
             modelBuilder.Entity<Keyword>();
+            modelBuilder.Entity<SearchIndex>();
+            modelBuilder.Entity<Search>();
+            modelBuilder.Entity<SearchAction>();
+
             // Three column primary key
             modelBuilder.Entity<KeywordInRepository>().HasKey(e => new {e.KeywordId, e.GitHubRepositoryId, e.Type});
         }
@@ -88,6 +88,18 @@ namespace XRealiSE_DBConnection
             existing.Update(repository);
             repository = existing;
             return lastCommitChanged;
+        }
+
+        public void InsertOrUpdateIndex(long gitHubRepositoryId, string index)
+        {
+            SearchIndex existing = SearchIndex.Find(gitHubRepositoryId);
+            if (existing == null)
+            {
+                SearchIndex.Add(new SearchIndex {GitHubRepositoryId = gitHubRepositoryId, SearchString = index});
+                return;
+            }
+
+            existing.SearchString = index;
         }
 
         /// <summary>

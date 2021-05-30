@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
 using Octokit;
 using Octokit.Internal;
 using XRealiSE_Crawler.KeywordExtractor;
@@ -32,30 +33,35 @@ namespace XRealiSE_Crawler
         public Crawler(string apikey, string mySqlHost, string mySqlUsername, string mySqlPassword,
             string mySqlDatabase, uint mySqlPort)
         {
-            ProductHeaderValue productHeaderValue = new ProductHeaderValue("xrealise");
+            ProductHeaderValue productHeaderValue = new("xrealise");
             _gitHubClient = new GitHubClient(productHeaderValue, new InMemoryCredentialStore(new Credentials(apikey)));
             _repositoryContentsClient =
                 new RepositoryContentsClient(
                     new ApiConnection(new Connection(productHeaderValue,
                         new InMemoryCredentialStore(new Credentials(apikey)))));
-            _keywordExtractors = new Dictionary<KeywordInRepository.KeywordInRepositoryType, BasicExtractor>();
-            _keywordExtractors.Add(KeywordInRepository.KeywordInRepositoryType.InReadmeRake1,
-                new RakeExtractor(1));
-            _keywordExtractors.Add(KeywordInRepository.KeywordInRepositoryType.InReadmeRake2,
-                new RakeExtractor(2));
-            _keywordExtractors.Add(KeywordInRepository.KeywordInRepositoryType.InReadmeRake3,
-                new RakeExtractor(3));
-            _keywordExtractors.Add(KeywordInRepository.KeywordInRepositoryType.InReadmeRake4,
-                new RakeExtractor(4));
-            _keywordExtractors.Add(KeywordInRepository.KeywordInRepositoryType.InReadmeTextRank,
-                new TextRankExtractor());
-            _keywordExtractors.Add(KeywordInRepository.KeywordInRepositoryType.InReadmeEdNormal,
-                new EntropyDifferenceExtractor());
-            _keywordExtractors.Add(KeywordInRepository.KeywordInRepositoryType.InReadmeEdMax,
-                new EntropyDifferenceExtractor(true));
+            _keywordExtractors = new Dictionary<KeywordInRepository.KeywordInRepositoryType, BasicExtractor>
+            {
+                {KeywordInRepository.KeywordInRepositoryType.InReadmeRake1, new RakeExtractor(1)},
+                {KeywordInRepository.KeywordInRepositoryType.InReadmeRake2, new RakeExtractor(2)},
+                {KeywordInRepository.KeywordInRepositoryType.InReadmeRake3, new RakeExtractor(3)},
+                {KeywordInRepository.KeywordInRepositoryType.InReadmeRake4, new RakeExtractor(4)},
+                {KeywordInRepository.KeywordInRepositoryType.InReadmeTextRank, new TextRankExtractor()},
+                {KeywordInRepository.KeywordInRepositoryType.InReadmeEdNormal, new EntropyDifferenceExtractor()},
+                {KeywordInRepository.KeywordInRepositoryType.InReadmeEdMax, new EntropyDifferenceExtractor(true)}
+            };
+
+            DatabaseConnection.DatabaseConnectionString = new MySqlConnectionStringBuilder
+            {
+                UserID = mySqlUsername,
+                Password = mySqlPassword,
+                Database = mySqlDatabase,
+                Server = mySqlHost,
+                Port = mySqlPort,
+                CharacterSet = "utf8mb4"
+            }.ConnectionString;
 
             _databaseConnection =
-                new DatabaseConnection(mySqlUsername, mySqlPassword, mySqlDatabase, mySqlHost, mySqlPort);
+                new DatabaseConnection(true);
         }
 
         private static void WaitUntil(DateTimeOffset time)
@@ -122,7 +128,7 @@ namespace XRealiSE_Crawler
 
         private async Task<string[]> GetFiles(long repositoryId, string extension, bool afterException = false)
         {
-            List<string> files = new List<string>();
+            List<string> files = new();
             await WaitForApiLimit();
             TreeResponse tree;
             try
@@ -198,7 +204,7 @@ namespace XRealiSE_Crawler
         /// <returns>A GitHubRepository with all storable informations from the given Repository</returns>
         private static GitHubRepository FromCrawled(Repository repo)
         {
-            return new GitHubRepository
+            return new()
             {
                 CreatedAt = repo.CreatedAt.UtcDateTime,
                 Description = repo.Description?.Length > 255
@@ -239,6 +245,7 @@ namespace XRealiSE_Crawler
         public async Task Crawl(int from, int to, string extra = "")
         {
             _crawledRepos = new List<long>();
+
             await CrawlRecursive(from, to, extra);
             //delete all unvisited & ( unreachable | without unity.com.xr )
 
@@ -249,7 +256,7 @@ namespace XRealiSE_Crawler
                 .Where(r => !_crawledRepos.Contains(r.GitHubRepositoryId)).ToArray();
             //Search code specific for each unfound repo in case they were not found because of uncached searches
             WriteLine("{0} repositories in DB that werent found by crawler.", oldRepos.Length);
-            SearchCodeRequest request = new SearchCodeRequest("com.unity.xr" + extra)
+            SearchCodeRequest request = new("com.unity.xr" + extra)
             {
                 FileName = "manifest.json",
                 PerPage = 100,
@@ -310,11 +317,14 @@ namespace XRealiSE_Crawler
                 string readme = await GetReadmeMd(repo.Id);
                 string strippedreadme = StripNonAlphanumeric(StripUrls(StripHtml(readme)));
 
+                List<string> indexwords = new List<string>();
+
                 if (strippedreadme.Length > 0)
                     foreach ((KeywordInRepository.KeywordInRepositoryType type, BasicExtractor extractor) in
                         _keywordExtractors)
                     {
                         Dictionary<string, double> keywords = extractor.GetKeywords(strippedreadme);
+                        indexwords.AddRange(keywords.Select(k => k.Key));
                         foreach ((string keyword, double weight) in keywords.Where(keyword =>
                             keyword.Key.Length <= 120))
                             _databaseConnection.AddKeywordConnection(gitHubRepository, keyword.Trim(), type, weight);
@@ -324,10 +334,16 @@ namespace XRealiSE_Crawler
                     Write("[NoReadme]");
 
                 string[] files = await GetFiles(repo.Id, "cs");
+                indexwords.AddRange(files);
+
                 foreach (string filename in files.Where(filename => filename.Length <= 120))
                     _databaseConnection.AddKeywordConnection(gitHubRepository, filename,
                         KeywordInRepository.KeywordInRepositoryType.Classname);
-                WriteLine("[ClassNames]");
+                Write("[ClassNames]");
+
+                _databaseConnection.InsertOrUpdateIndex(gitHubRepository.GitHubRepositoryId,
+                    string.Join(' ', indexwords.Distinct().ToList()));
+                WriteLine("[IndexWritten]");
             }
             else
             {
@@ -339,7 +355,7 @@ namespace XRealiSE_Crawler
         {
             Write("Crawling sizes from {0} to {1}, ", from, to);
 
-            SearchCodeRequest request = new SearchCodeRequest("com.unity.xr" + extra)
+            SearchCodeRequest request = new("com.unity.xr" + extra)
             {
                 Size = new Range(from, to),
                 FileName = "manifest.json",
