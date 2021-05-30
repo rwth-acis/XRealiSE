@@ -1,4 +1,4 @@
-﻿@page "search/{key:int?}/{start:int?}/{repository:long?}"
+﻿@page "/{key:int?}/{start:int?}/{repository:long?}"
 @model IndexModel
 @{
     ViewData["Title"] = "XRealiSE";
@@ -8,7 +8,7 @@
 <h1 class="display-4">XRealiSE</h1>
 <p>Search for mixed reality components on GitHub.</p>
 <div>
-    <form method="post">
+    <form method="post" asp-antiforgery="false">
         <div class="mb-3 row">
             <div class="col-sm-9">
                 @if (DbHelper.SearchResults.Keys.Contains(Model.SearchKey))
