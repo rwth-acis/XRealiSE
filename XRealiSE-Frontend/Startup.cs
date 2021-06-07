@@ -1,6 +1,5 @@
 #region
 
-using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -27,14 +26,14 @@ namespace XRealiSE_Frontend
         {
             services.AddRazorPages(options =>
             {
-                options.Conventions.AddPageRoute("/Index", "/{key:int?}/{start:int?}/{repository:long?}");
+               // options.Conventions.AddPageRoute("/Index", "/{key:int?}/{start:int?}/{repository:long?}");
                 options.Conventions.AddPageRoute("/Index", "/");
-            }).AddRazorPagesOptions(options => { options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute()); });
+            }).AddRazorPagesOptions(options => options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute()));
             DatabaseConnection.DatabaseConnectionString = Configuration.GetConnectionString("xrealise");
             services.AddDbContext<DatabaseConnection>();
 
-            
-           // services.AddAntiforgery(options => options.Cookie.Expiration = TimeSpan.Zero);
+
+            // services.AddAntiforgery(options => options.Cookie.Expiration = TimeSpan.Zero);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,7 +53,7 @@ namespace XRealiSE_Frontend
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthorization();
-            app.UseEndpoints(endpoints => { endpoints.MapRazorPages(); });
+            app.UseEndpoints(endpoints => endpoints.MapRazorPages());
         }
     }
 }

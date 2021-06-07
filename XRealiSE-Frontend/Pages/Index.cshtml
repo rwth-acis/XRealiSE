@@ -146,7 +146,7 @@
                 @if (Model.Start != 0)
                 {
                     <li class="page-item">
-                        <a class="page-link" href="/search/@Model.SearchKey/@(Model.Start - 1)">Previous</a>
+                        <a class="page-link" href="/@Model.SearchKey/@(Model.Start - 1)">Previous</a>
                     </li>
                 }
                 else
@@ -166,14 +166,14 @@
                     else
                     {
                         <li class="page-item">
-                            <a class="page-link" href="/search/@Model.SearchKey/@i">@(i + 1)</a>
+                            <a class="page-link" href="/@Model.SearchKey/@i">@(i + 1)</a>
                         </li>
                     }
                 }
                 @if (Model.Start < DbHelper.SearchResults[Model.SearchKey].ResultSet.Length / Model.ResultsPerPage)
                 {
                     <li class="page-item">
-                        <a class="page-link" href="/search/@Model.SearchKey/@(Model.Start + 1)">Next</a>
+                        <a class="page-link" href="/@Model.SearchKey/@(Model.Start + 1)">Next</a>
                     </li>
                 }
                 else
@@ -190,7 +190,7 @@
                 <div class="row m-2">
                     <div class="col-6">
                         <b style="font-size: large">
-                            <a href="/search/@Model.SearchKey/@(Model.Start + 1)/@Model.ResultSubSet[i].GitHubRepositoryId" target="_blank">@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name</a>
+                            <a href="/@Model.SearchKey/@(Model.Start + 1)/@Model.ResultSubSet[i].GitHubRepositoryId" target="_blank">@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name</a>
                         </b>
                     </div>
                     <div class="col align-bottom">
@@ -222,7 +222,7 @@
                 @if (Model.Start != 0)
                 {
                     <li class="page-item">
-                        <a class="page-link" href="/search/@Model.SearchKey/@(Model.Start - 1)">Previous</a>
+                        <a class="page-link" href="/@Model.SearchKey/@(Model.Start - 1)">Previous</a>
                     </li>
                 }
                 else
@@ -242,14 +242,14 @@
                     else
                     {
                         <li class="page-item">
-                            <a class="page-link" href="/search/@Model.SearchKey/@i">@(i + 1)</a>
+                            <a class="page-link" href="/@Model.SearchKey/@i">@(i + 1)</a>
                         </li>
                     }
                 }
                 @if (Model.Start < DbHelper.SearchResults[Model.SearchKey].ResultSet.Length / Model.ResultsPerPage)
                 {
                     <li class="page-item">
-                        <a class="page-link" href="/search/@Model.SearchKey/@(Model.Start + 1)">Next</a>
+                        <a class="page-link" href="/@Model.SearchKey/@(Model.Start + 1)">Next</a>
                     </li>
                 }
                 else
@@ -260,6 +260,7 @@
                 }
             </ul>
         </nav>
+        If you'd like to give feedback then consider filling out our <a href="https://limesurvey.tech4comp.dbis.rwth-aachen.de/index.php/368718?lang=en" target="_blank">feedback form</a>.
     </div>
 }
 else if (Model.SearchKey == -2)

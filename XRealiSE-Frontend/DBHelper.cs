@@ -286,7 +286,7 @@ namespace XRealiSE_Frontend
             });
             connection.SaveChanges();
 
-            // order the partial result (skip pages, take pagesize) egain because the where does not preserve order.
+            // order the partial result (skip pages, take pagesize) again because the where does not preserve order.
             return OrderItems(connection.GitHubRepositories.Where(repo =>
                     SearchResults[searchKey].ResultSet.Skip(itemnsperpage * page).Take(itemnsperpage)
                         .Contains(repo.GitHubRepositoryId)).ToList(), SearchResults[searchKey].Order,

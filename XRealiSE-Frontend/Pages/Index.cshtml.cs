@@ -55,6 +55,7 @@ namespace XRealiSE_Frontend.Pages
                         ActionTime = DateTime.Now, SearchId = DbHelper.SearchResults[SearchKey].DatabaseId
                     });
                     _connection.SaveChanges();
+                    _connection.Dispose();
                     return Redirect("https://github.com/" + repo.Owner + "/" + repo.Name);
                 }
             }
@@ -64,6 +65,7 @@ namespace XRealiSE_Frontend.Pages
             else if (SearchKey != -1)
                 SearchKey = -3;
 
+            _connection.Dispose();
             return null;
         }
 
@@ -85,10 +87,11 @@ namespace XRealiSE_Frontend.Pages
                 {
                     SearchKey = searchtask.Result;
                     ResultSubSet = DbHelper.GetRepos(Start, ResultsPerPage, SearchKey, _connection);
+                    _connection.Dispose();
                     return;
                 }
-
-                tokenSource.Cancel();
+                //_connection.Dispose();
+                //tokenSource.Cancel();
                 SearchKey = -2;
             }
         }
