@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
@@ -112,30 +113,22 @@ namespace XRealiSE_Frontend
             return OrderItems(query.ToList(), order, orderAttribute).Select(repo => repo.GitHubRepositoryId).ToArray();
         }
 
-        internal static int Search(DatabaseConnection connection, string searchString, int order, int orderAttribute,
+        internal static async Task<int> Search(DatabaseConnection connection, string searchString, int order, int orderAttribute,
             bool[] filters, int[] filterEuqalities, string[] filterValue, bool matchAllWords = false,
             int? parentSearch = null)
         {
             Task.Factory.StartNew(CleanupOldSearches);
 
             Stopwatch stopwatch = new Stopwatch();
+            Regex regexUnwanted = new Regex("[^a-zA-Z ]");
 
             stopwatch.Start();
-            searchString = searchString.ToLower();
-            string[] words = searchString.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-            List<long> foundRepos = connection.SearchIndex.Where(s => s.SearchString.Contains(words[0]))
-                .Select(s => s.GitHubRepositoryId).ToList();
+            searchString = regexUnwanted.Replace(searchString, "").ToLower();
 
-            for (int i = 1; i < words.Length; i++)
-                if (matchAllWords)
-                    foundRepos = foundRepos.Intersect(connection.SearchIndex
-                        .Where(s => s.SearchString.Contains(words[i]))
-                        .Select(s => s.GitHubRepositoryId)).ToList();
-                else
-                    foundRepos = foundRepos.Union(connection.SearchIndex
-                        .Where(s => s.SearchString.Contains(words[i]))
-                        .Select(s => s.GitHubRepositoryId)).ToList();
+            List<long> foundRepos = connection.SearchIndex.FromSqlRaw(
+                "SELECT * FROM SearchIndex WHERE MATCH (SearchString) AGAINST (\"" + searchString +
+                "\" IN NATURAL LANGUAGE MODE);").Select(s => s.GitHubRepositoryId).ToList();
 
             long[] resultSet = OrderAndFilterItems(connection, foundRepos.ToArray(), order, orderAttribute, filters,
                 filterEuqalities, filterValue);
@@ -274,7 +267,7 @@ namespace XRealiSE_Frontend
             return text;
         }
 
-        internal static GitHubRepository[] GetRepos(int page, int itemnsperpage, int searchKey,
+        internal static GitHubRepository[] GetRepos(int page, int itemsperpage, int searchKey,
             DatabaseConnection connection)
         {
             //track usage
@@ -288,7 +281,7 @@ namespace XRealiSE_Frontend
 
             // order the partial result (skip pages, take pagesize) again because the where does not preserve order.
             return OrderItems(connection.GitHubRepositories.Where(repo =>
-                    SearchResults[searchKey].ResultSet.Skip(itemnsperpage * page).Take(itemnsperpage)
+                    SearchResults[searchKey].ResultSet.Skip(itemsperpage * page).Take(itemsperpage)
                         .Contains(repo.GitHubRepositoryId)).ToList(), SearchResults[searchKey].Order,
                 SearchResults[searchKey].OrderAttribute);
         }

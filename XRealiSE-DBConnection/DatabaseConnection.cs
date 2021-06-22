@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using XRealiSE_DBConnection.data;
+using MySql.Data.MySqlClient;
 
 #endregion
 
@@ -32,6 +33,35 @@ namespace XRealiSE_DBConnection
 
             Database.EnsureCreated();
 
+            // Check if a fulltext index is given, since entity framework has no support for it
+            // we use the "classic" mysql approach
+            if (!_fullTextChecked)
+            {
+                using MySqlConnection connection = new MySqlConnection(DatabaseConnectionString);
+                connection.Open();
+
+                MySqlDataReader reader = new MySqlCommand("SHOW INDEX FROM searchindex;", connection).ExecuteReader();
+
+                while (reader.Read())
+                    if (reader.GetString("Key_name") == "SearchIndex" && reader.GetString("Column_name") == "SearchString" && reader.GetString("Index_type") == "FULLTEXT")
+                        _fullTextChecked = true;
+
+                reader.Close();
+
+                if (!_fullTextChecked)
+                {
+                    MySqlCommand commandCreateFulltext =
+                        new MySqlCommand(
+                            "ALTER TABLE searchindex ADD FULLTEXT INDEX SearchIndex (SearchString);",
+                            connection);
+                    commandCreateFulltext.ExecuteNonQuery();
+                    _fullTextChecked = true;
+                }
+
+                connection.Close();
+            }
+
+
             // Generating a local database of keywords because a search for an existing keyword in the DbSet
             // is extremely slow.
             if (!keyWordCache) return;
@@ -45,6 +75,7 @@ namespace XRealiSE_DBConnection
         public DbSet<SearchIndex> SearchIndex { get; set; }
         public DbSet<Search> Searches { get; set; }
         public DbSet<SearchAction> SearchActions { get; set; }
+        private static bool _fullTextChecked;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

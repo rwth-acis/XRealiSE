@@ -19,7 +19,8 @@ namespace XRealiSE_DBConnection.data
             InReadmeRake4,
             InReadmeTextRank,
             InReadmeEdNormal,
-            InReadmeEdMax
+            InReadmeEdMax,
+            UnityVersion
         }
 
         [Required] public KeywordInRepositoryType Type { get; set; }

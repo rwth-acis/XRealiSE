@@ -77,21 +77,21 @@ namespace XRealiSE_Frontend.Pages
                 CancellationTokenSource tokenSource = new CancellationTokenSource();
                 CancellationToken token = tokenSource.Token;
 
-
                 Task<int> searchtask =
                     Task.Run(
                         () => DbHelper.Search(_connection, Searchstring, Order, OrderAttribute, FilterActive,
                             FilterEquality, FilterValue, SearchType == 1,
                             ParentSearch), token);
-                if (searchtask.Wait(6000))
+                if (searchtask.Wait(5000))
                 {
                     SearchKey = searchtask.Result;
                     ResultSubSet = DbHelper.GetRepos(Start, ResultsPerPage, SearchKey, _connection);
                     _connection.Dispose();
                     return;
                 }
-                //_connection.Dispose();
-                //tokenSource.Cancel();
+
+                _connection.Dispose();
+                tokenSource.Cancel();
                 SearchKey = -2;
             }
         }

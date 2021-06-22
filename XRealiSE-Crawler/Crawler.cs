@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,6 +50,8 @@ namespace XRealiSE_Crawler
                 {KeywordInRepository.KeywordInRepositoryType.InReadmeEdNormal, new EntropyDifferenceExtractor()},
                 {KeywordInRepository.KeywordInRepositoryType.InReadmeEdMax, new EntropyDifferenceExtractor(true)}
             };
+
+            
 
             DatabaseConnection.DatabaseConnectionString = new MySqlConnectionStringBuilder
             {
@@ -126,30 +129,39 @@ namespace XRealiSE_Crawler
             }
         }
 
-        private async Task<string[]> GetFiles(long repositoryId, string extension, bool afterException = false)
+        private async Task<TreeResponse> GetFiles(long repositoryId, bool afterException = false)
         {
             List<string> files = new();
             await WaitForApiLimit();
             TreeResponse tree;
             try
             {
-                tree = await _gitHubClient.Git.Tree.GetRecursive(repositoryId, "HEAD");
+                return await _gitHubClient.Git.Tree.GetRecursive(repositoryId, "HEAD");
             }
             catch (ApiException e)
             {
                 Write("--- ApiException: {0} waiting 60 seconds --- ", e.Message);
                 Thread.Sleep(60 * 1000);
                 if (!afterException)
-                    return await GetFiles(repositoryId, extension, true);
+                    return await GetFiles(repositoryId, true);
 
                 throw new Exception("Second exception, within GetFiles");
             }
+        }
 
-            foreach (TreeItem treeItem in tree.Tree)
-                if (treeItem.Path.EndsWith(extension, StringComparison.Ordinal))
-                    files.Add(Path.GetFileNameWithoutExtension(treeItem.Path)?.ToLower().Trim());
+        private async Task<string> GetFileContents(long repositoryId, string sha)
+        {
+            Blob blob = await _gitHubClient.Git.Blob.Get(repositoryId, sha);
+            if (blob.Encoding.Value == EncodingType.Base64)
+            {
+                return Encoding.UTF8.GetString(Convert.FromBase64String(blob.Content));
+            }
+            else if (blob.Encoding.Value == EncodingType.Utf8)
+            {
+                return blob.Content;
+            }
 
-            return files.Distinct().ToArray();
+            return "";
         }
 
         private async Task<SearchCodeResult> SearchCode(SearchCodeRequest request, bool afterException = false)
@@ -300,6 +312,8 @@ namespace XRealiSE_Crawler
 
             GitHubRepository gitHubRepository = FromCrawled(repo);
 
+            
+
             bool updatekeywords = _databaseConnection.InsertOrUpdateRepository(ref gitHubRepository);
 
             Write("[Repository]");
@@ -333,7 +347,25 @@ namespace XRealiSE_Crawler
                 else
                     Write("[NoReadme]");
 
-                string[] files = await GetFiles(repo.Id, "cs");
+                TreeResponse tree = await GetFiles(repo.Id);
+
+                List<string> files = (from treeItem in tree.Tree where treeItem.Path.EndsWith("cs", StringComparison.Ordinal) select Path.GetFileNameWithoutExtension(treeItem.Path)?.ToLower().Trim()).Distinct().ToList();
+
+                List<string> versions = new List<string>();
+                foreach (TreeItem item in tree.Tree.Where(item => item.Path.EndsWith("ProjectSettings/ProjectVersion.txt", StringComparison.Ordinal)))
+                {
+                    string contents = await GetFileContents(repo.Id, item.Sha);
+                    Match m = Regex.Match(contents, "^m_EditorVersion: (.*)\n");
+                    if (m.Success)
+                        versions.Add(m.Groups[1].Captures[0].Value);
+                }
+
+
+                foreach (string version in versions.Distinct())
+                    _databaseConnection.AddKeywordConnection(gitHubRepository, version,
+                        KeywordInRepository.KeywordInRepositoryType.UnityVersion);
+                Write("[UnityVersions]");
+
                 indexwords.AddRange(files);
 
                 foreach (string filename in files.Where(filename => filename.Length <= 120))
