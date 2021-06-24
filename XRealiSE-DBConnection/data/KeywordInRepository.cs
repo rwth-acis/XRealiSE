@@ -27,11 +27,11 @@ namespace XRealiSE_DBConnection.data
         [Required] public KeywordInRepositoryType Type { get; set; }
 
         public double Weight { get; set; }
-        
-        [ForeignKey("Keyword")]
-        public long KeywordId { get; set; }
-        [ForeignKey("Repository")]
-        public long GitHubRepositoryId { get; set; }
+
+        [ForeignKey("Keyword")] public long KeywordId { get; set; }
+
+        [ForeignKey("Repository")] public long GitHubRepositoryId { get; set; }
+
         public virtual Keyword Keyword { get; set; }
         public virtual GitHubRepository Repository { get; set; }
     }

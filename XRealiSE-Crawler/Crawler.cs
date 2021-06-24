@@ -51,7 +51,6 @@ namespace XRealiSE_Crawler
                 {KeywordInRepository.KeywordInRepositoryType.InReadmeEdMax, new EntropyDifferenceExtractor(true)}
             };
 
-            
 
             DatabaseConnection.DatabaseConnectionString = new MySqlConnectionStringBuilder
             {
@@ -365,7 +364,8 @@ namespace XRealiSE_Crawler
                 else
                     Write("[NoReadme]");
 
-                Match imagematch = Regex.Match(readme, @"(?i)!\[[^\]]*]\((https?:[^\s<>)]*.(?:png|jpe?g|gif)\??[^\s)<>]?)\)");
+                Match imagematch = Regex.Match(readme,
+                    @"(?i)!\[[^\]]*]\((https?:[^\s<>)]*.(?:png|jpe?g|gif)\??[^\s)<>]?)\)");
                 if (imagematch.Success)
                 {
                     gitHubRepository.ImageUrl = imagematch.Groups[1].Captures[0].Value;
@@ -379,12 +379,16 @@ namespace XRealiSE_Crawler
 
                 TreeResponse tree = await GetFiles(repo.Id);
 
-                List<string> files = (from treeItem in tree.Tree where treeItem.Path.EndsWith("cs", StringComparison.Ordinal) select Path.GetFileNameWithoutExtension(treeItem.Path)?.ToLower().Trim()).Distinct().ToList();
+                List<string> files =
+                    (from treeItem in tree.Tree
+                        where treeItem.Path.EndsWith("cs", StringComparison.Ordinal)
+                        select Path.GetFileNameWithoutExtension(treeItem.Path)?.ToLower().Trim()).Distinct().ToList();
 
                 List<string> versions = new List<string>();
 
                 // If there are multiple unity Projects within a repository - get every version information.
-                foreach (TreeItem item in tree.Tree.Where(item => item.Path.EndsWith("ProjectSettings/ProjectVersion.txt", StringComparison.Ordinal)))
+                foreach (TreeItem item in tree.Tree.Where(item =>
+                    item.Path.EndsWith("ProjectSettings/ProjectVersion.txt", StringComparison.Ordinal)))
                 {
                     string contents = await GetFileContents(repo.Id, item.Sha);
                     Match m = Regex.Match(contents, "^m_EditorVersion: (.*)$");

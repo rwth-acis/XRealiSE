@@ -2,12 +2,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using XRealiSE_DBConnection.data;
 using MySql.Data.MySqlClient;
+using XRealiSE_DBConnection.data;
 
 #endregion
 
@@ -16,6 +15,7 @@ namespace XRealiSE_DBConnection
     public sealed class DatabaseConnection : DbContext
     {
         public static string DatabaseConnectionString;
+        private static bool _fullTextChecked;
         private readonly Dictionary<string, long> _generatedKeywords;
         private readonly Dictionary<string, Keyword> _generatedKeywordsUncached;
 
@@ -84,7 +84,6 @@ namespace XRealiSE_DBConnection
         public DbSet<SearchIndex> SearchIndex { get; set; }
         public DbSet<Search> Searches { get; set; }
         public DbSet<SearchAction> SearchActions { get; set; }
-        private static bool _fullTextChecked;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -131,7 +130,7 @@ namespace XRealiSE_DBConnection
         }
 
         /// <summary>
-        /// Adds or replaces a SearchIndex for the given repositoryID
+        ///     Adds or replaces a SearchIndex for the given repositoryID
         /// </summary>
         /// <param name="gitHubRepositoryId">The RepositoryId to add/change the search index.</param>
         /// <param name="index">The search index string.</param>
@@ -184,7 +183,6 @@ namespace XRealiSE_DBConnection
             }
             else
             {
-
                 // Check if that connection already exists
                 KeywordInRepository existingConnection =
                     KeywordInRepositories.Find(existingKeywordId, repository.GitHubRepositoryId, type);
@@ -203,7 +201,8 @@ namespace XRealiSE_DBConnection
 
         private void MoveGeneratedKeywords()
         {
-            foreach ((string key, Keyword value) in _generatedKeywordsUncached) _generatedKeywords.Add(key, value.KeywordId);
+            foreach ((string key, Keyword value) in _generatedKeywordsUncached)
+                _generatedKeywords.Add(key, value.KeywordId);
             _generatedKeywordsUncached.Clear();
         }
 
@@ -232,7 +231,8 @@ namespace XRealiSE_DBConnection
         }
 
         /// <inheritdoc />
-        public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+        public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
+            CancellationToken cancellationToken = new CancellationToken())
         {
             int returnvalue = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
             MoveGeneratedKeywords();
