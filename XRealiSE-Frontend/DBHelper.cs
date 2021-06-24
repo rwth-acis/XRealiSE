@@ -113,7 +113,8 @@ namespace XRealiSE_Frontend
             return OrderItems(query.ToList(), order, orderAttribute).Select(repo => repo.GitHubRepositoryId).ToArray();
         }
 
-        internal static async Task<int> Search(DatabaseConnection connection, string searchString, int order, int orderAttribute,
+        internal static async Task<int> Search(DatabaseConnection connection, string searchString, int order,
+            int orderAttribute,
             bool[] filters, int[] filterEuqalities, string[] filterValue, bool matchAllWords = false,
             int? parentSearch = null)
         {

@@ -125,7 +125,7 @@ namespace XRealiSE_Crawler
                 if (!afterException)
                     return await GetReadmeMd(repositoryId, true);
 
-                throw new Exception("Second exception, within GetReadme");
+                throw new Exception("Second exception, within GetReadme", e);
             }
         }
 
@@ -145,23 +145,43 @@ namespace XRealiSE_Crawler
                 if (!afterException)
                     return await GetFiles(repositoryId, true);
 
-                throw new Exception("Second exception, within GetFiles");
+                throw new Exception("Second exception, within GetFiles", e);
             }
         }
 
-        private async Task<string> GetFileContents(long repositoryId, string sha)
+        private async Task<string> GetFileContents(long repositoryId, string sha, bool afterException = false)
         {
-            Blob blob = await _gitHubClient.Git.Blob.Get(repositoryId, sha);
-            if (blob.Encoding.Value == EncodingType.Base64)
+            await WaitForApiLimit();
+            Blob blob;
+            try
             {
-                return Encoding.UTF8.GetString(Convert.FromBase64String(blob.Content));
+                blob = await _gitHubClient.Git.Blob.Get(repositoryId, sha);
             }
-            else if (blob.Encoding.Value == EncodingType.Utf8)
+            catch (AbuseException e)
             {
-                return blob.Content;
+                Write("--- AbuseException! Waiting {0} seconds --- ", e.RetryAfterSeconds);
+                Thread.Sleep(1000 * (e.RetryAfterSeconds ?? 60));
+                if (!afterException)
+                    return await GetFileContents(repositoryId, sha, true);
+
+                throw new Exception("Second exception, within GetFileContents", e);
+            }
+            catch (ApiException e)
+            {
+                Write("--- ApiException: {0} waiting 60 seconds --- ", e.Message);
+                Thread.Sleep(60 * 1000);
+                if (!afterException)
+                    return await GetFileContents(repositoryId, sha, true);
+
+                throw new Exception("Second exception, within GetFileContents", e);
             }
 
-            return "";
+            return blob.Encoding.Value switch
+            {
+                EncodingType.Base64 => Encoding.UTF8.GetString(Convert.FromBase64String(blob.Content)),
+                EncodingType.Utf8 => blob.Content,
+                _ => ""
+            };
         }
 
         private async Task<SearchCodeResult> SearchCode(SearchCodeRequest request, bool afterException = false)
@@ -178,7 +198,7 @@ namespace XRealiSE_Crawler
                 if (!afterException)
                     return await SearchCode(request, true);
 
-                throw new Exception("Second exception, within SearchCode");
+                throw new Exception("Second exception, within SearchCode", e);
             }
             catch (ApiException e)
             {
@@ -187,7 +207,7 @@ namespace XRealiSE_Crawler
                 if (!afterException)
                     return await SearchCode(request, true);
 
-                throw new Exception("Second exception, within SearchCode");
+                throw new Exception("Second exception, within SearchCode", e);
             }
         }
 
@@ -205,7 +225,7 @@ namespace XRealiSE_Crawler
                 if (!afterException)
                     return await GetRepository(repositoryId, true);
 
-                throw new Exception("Second exception, within GetRepository");
+                throw new Exception("Second exception, within GetRepository", e);
             }
         }
 
@@ -312,8 +332,6 @@ namespace XRealiSE_Crawler
 
             GitHubRepository gitHubRepository = FromCrawled(repo);
 
-            
-
             bool updatekeywords = _databaseConnection.InsertOrUpdateRepository(ref gitHubRepository);
 
             Write("[Repository]");
@@ -347,15 +365,29 @@ namespace XRealiSE_Crawler
                 else
                     Write("[NoReadme]");
 
+                Match imagematch = Regex.Match(readme, @"(?i)!\[[^\]]*]\((https?:[^\s<>)]*.(?:png|jpe?g|gif)\??[^\s)<>]?)\)");
+                if (imagematch.Success)
+                {
+                    gitHubRepository.ImageUrl = imagematch.Groups[1].Captures[0].Value;
+                    Write("[Image]");
+                }
+                else
+                {
+                    Write("[NoImage]");
+                }
+
+
                 TreeResponse tree = await GetFiles(repo.Id);
 
                 List<string> files = (from treeItem in tree.Tree where treeItem.Path.EndsWith("cs", StringComparison.Ordinal) select Path.GetFileNameWithoutExtension(treeItem.Path)?.ToLower().Trim()).Distinct().ToList();
 
                 List<string> versions = new List<string>();
+
+                // If there are multiple unity Projects within a repository - get every version information.
                 foreach (TreeItem item in tree.Tree.Where(item => item.Path.EndsWith("ProjectSettings/ProjectVersion.txt", StringComparison.Ordinal)))
                 {
                     string contents = await GetFileContents(repo.Id, item.Sha);
-                    Match m = Regex.Match(contents, "^m_EditorVersion: (.*)\n");
+                    Match m = Regex.Match(contents, "^m_EditorVersion: (.*)$");
                     if (m.Success)
                         versions.Add(m.Groups[1].Captures[0].Value);
                 }

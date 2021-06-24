@@ -28,7 +28,8 @@ namespace XRealiSE_Frontend
             {
                 // options.Conventions.AddPageRoute("/Index", "/{key:int?}/{start:int?}/{repository:long?}");
                 options.Conventions.AddPageRoute("/Index", "/");
-            }).AddRazorPagesOptions(options => options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute()));
+            }).AddRazorPagesOptions(options =>
+                options.Conventions.ConfigureFilter(new IgnoreAntiforgeryTokenAttribute()));
             DatabaseConnection.DatabaseConnectionString = Configuration.GetConnectionString("xrealise");
             services.AddDbContext<DatabaseConnection>();
 

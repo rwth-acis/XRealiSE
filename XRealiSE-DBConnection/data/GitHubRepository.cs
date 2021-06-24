@@ -57,6 +57,10 @@ namespace XRealiSE_DBConnection.data
 
         [Required] public int WatchersCount { get; set; }
 
+        [Column(TypeName = "varchar(255)")]
+        [MySqlCharset("utf8")]
+        public string ImageUrl { get; set; }
+
         public virtual ICollection<KeywordInRepository> KeywordInRepositories { get; set; }
 
         /// <summary>

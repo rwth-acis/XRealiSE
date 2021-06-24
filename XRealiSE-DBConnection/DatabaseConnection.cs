@@ -2,6 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using XRealiSE_DBConnection.data;
 using MySql.Data.MySqlClient;
@@ -13,7 +16,8 @@ namespace XRealiSE_DBConnection
     public sealed class DatabaseConnection : DbContext
     {
         public static string DatabaseConnectionString;
-        private readonly Dictionary<string, Keyword> _generatedKeywords;
+        private readonly Dictionary<string, long> _generatedKeywords;
+        private readonly Dictionary<string, Keyword> _generatedKeywordsUncached;
 
         /// <inheritdoc />
         /// <summary>
@@ -29,12 +33,13 @@ namespace XRealiSE_DBConnection
             if (DatabaseConnectionString == null)
                 throw new InvalidOperationException("DatabaseConnectionString must be set before initialising objects");
 
-            _generatedKeywords = new Dictionary<string, Keyword>();
+            _generatedKeywords = new Dictionary<string, long>();
+            _generatedKeywordsUncached = new Dictionary<string, Keyword>();
 
             Database.EnsureCreated();
 
             // Check if a fulltext index is given, since entity framework has no support for it
-            // we use the "classic" mysql approach
+            // we use the "classic" MySqlConnection
             if (!_fullTextChecked)
             {
                 using MySqlConnection connection = new MySqlConnection(DatabaseConnectionString);
@@ -42,12 +47,16 @@ namespace XRealiSE_DBConnection
 
                 MySqlDataReader reader = new MySqlCommand("SHOW INDEX FROM searchindex;", connection).ExecuteReader();
 
+                // Check if the fulltext index exists
                 while (reader.Read())
-                    if (reader.GetString("Key_name") == "SearchIndex" && reader.GetString("Column_name") == "SearchString" && reader.GetString("Index_type") == "FULLTEXT")
+                    if (reader.GetString("Key_name") == "SearchIndex" &&
+                        reader.GetString("Column_name") == "SearchString" &&
+                        reader.GetString("Index_type") == "FULLTEXT")
                         _fullTextChecked = true;
 
                 reader.Close();
 
+                // if the fulltext index was not found add it
                 if (!_fullTextChecked)
                 {
                     MySqlCommand commandCreateFulltext =
@@ -66,7 +75,7 @@ namespace XRealiSE_DBConnection
             // is extremely slow.
             if (!keyWordCache) return;
 
-            foreach (Keyword keyword in Keywords) _generatedKeywords.Add(keyword.Word, keyword);
+            foreach (Keyword keyword in Keywords) _generatedKeywords.Add(keyword.Word, keyword.KeywordId);
         }
 
         public DbSet<GitHubRepository> GitHubRepositories { get; set; }
@@ -79,7 +88,7 @@ namespace XRealiSE_DBConnection
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseLazyLoadingProxies();
+            //optionsBuilder.UseLazyLoadingProxies();
             optionsBuilder.UseMySQL(DatabaseConnectionString);
         }
 
@@ -121,6 +130,11 @@ namespace XRealiSE_DBConnection
             return lastCommitChanged;
         }
 
+        /// <summary>
+        /// Adds or replaces a SearchIndex for the given repositoryID
+        /// </summary>
+        /// <param name="gitHubRepositoryId">The RepositoryId to add/change the search index.</param>
+        /// <param name="index">The search index string.</param>
         public void InsertOrUpdateIndex(long gitHubRepositoryId, string index)
         {
             SearchIndex existing = SearchIndex.Find(gitHubRepositoryId);
@@ -144,31 +158,85 @@ namespace XRealiSE_DBConnection
         public void AddKeywordConnection(GitHubRepository repository, string keyword,
             KeywordInRepository.KeywordInRepositoryType type, double weight = 1)
         {
-            Keyword existingKeyword;
+            long existingKeywordId = -1;
+            Keyword existingKeyword = null;
             if (_generatedKeywords.ContainsKey(keyword)) // If that keyword exists in the DB
             {
-                existingKeyword = _generatedKeywords[keyword];
+                existingKeywordId = _generatedKeywords[keyword];
+            }
+            else if (_generatedKeywordsUncached.ContainsKey(keyword))
+            {
+                existingKeyword = _generatedKeywordsUncached[keyword];
             }
             else // Insert it to add the connection
             {
                 existingKeyword = new Keyword {Word = keyword};
                 Keywords.Add(existingKeyword);
-                _generatedKeywords.Add(keyword, existingKeyword);
+                _generatedKeywordsUncached.Add(keyword, existingKeyword);
             }
 
-            // Chack if that connection already exists
-            KeywordInRepository existingConnection =
-                KeywordInRepositories.Find(existingKeyword.KeywordId, repository.GitHubRepositoryId, type);
-            if (existingConnection == null) // if not insert that new connection
+
+            // Keyword not existing in DB therefore no existing connection to possibly be updated
+            if (existingKeywordId == -1 && existingKeyword != null)
             {
-                existingConnection = new KeywordInRepository
-                    {Keyword = existingKeyword, Repository = repository, Weight = weight, Type = type};
-                KeywordInRepositories.Add(existingConnection);
+                KeywordInRepositories.Add(new KeywordInRepository
+                    {Keyword = existingKeyword, Repository = repository, Weight = weight, Type = type});
             }
-            else // otherwise update the weight
+            else
             {
-                existingConnection.Weight = weight;
+
+                // Check if that connection already exists
+                KeywordInRepository existingConnection =
+                    KeywordInRepositories.Find(existingKeywordId, repository.GitHubRepositoryId, type);
+                if (existingConnection == null) // if not insert that new connection
+                {
+                    existingConnection = new KeywordInRepository
+                        {KeywordId = existingKeywordId, Repository = repository, Weight = weight, Type = type};
+                    KeywordInRepositories.Add(existingConnection);
+                }
+                else // otherwise update the weight
+                {
+                    existingConnection.Weight = weight;
+                }
             }
+        }
+
+        private void MoveGeneratedKeywords()
+        {
+            foreach ((string key, Keyword value) in _generatedKeywordsUncached) _generatedKeywords.Add(key, value.KeywordId);
+            _generatedKeywordsUncached.Clear();
+        }
+
+        /// <inheritdoc />
+        public override int SaveChanges()
+        {
+            int returnvalue = base.SaveChanges();
+            MoveGeneratedKeywords();
+            return returnvalue;
+        }
+
+        /// <inheritdoc />
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            int returnvalue = base.SaveChanges(acceptAllChangesOnSuccess);
+            MoveGeneratedKeywords();
+            return returnvalue;
+        }
+
+        /// <inheritdoc />
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            int returnvalue = await base.SaveChangesAsync(cancellationToken);
+            MoveGeneratedKeywords();
+            return returnvalue;
+        }
+
+        /// <inheritdoc />
+        public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = new CancellationToken())
+        {
+            int returnvalue = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+            MoveGeneratedKeywords();
+            return returnvalue;
         }
     }
 }
