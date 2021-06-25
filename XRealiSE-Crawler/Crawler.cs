@@ -23,7 +23,7 @@ namespace XRealiSE_Crawler
 {
     internal class Crawler
     {
-        private readonly DatabaseConnection _databaseConnection;
+        private DatabaseConnection _databaseConnection;
         private readonly GitHubClient _gitHubClient;
         private readonly Dictionary<KeywordInRepository.KeywordInRepositoryType, BasicExtractor> _keywordExtractors;
         private readonly RepositoryContentsClient _repositoryContentsClient;
@@ -69,7 +69,9 @@ namespace XRealiSE_Crawler
         private static void WaitUntil(DateTimeOffset time)
         {
             TimeSpan waittime = time - DateTimeOffset.Now;
-            Write(" --- Rate limit reached! Waiting {0} seconds --- ", waittime.TotalSeconds);
+            //Waiting 5 additional seconds in case of asynchronous cloks
+            Write(" --- Rate limit reached! Waiting {0} seconds --- ", waittime.TotalSeconds + 5);
+            Thread.Sleep(5000);
             if (waittime > new TimeSpan(0))
                 Thread.Sleep(waittime);
         }
@@ -130,9 +132,7 @@ namespace XRealiSE_Crawler
 
         private async Task<TreeResponse> GetFiles(long repositoryId, bool afterException = false)
         {
-            List<string> files = new();
             await WaitForApiLimit();
-            TreeResponse tree;
             try
             {
                 return await _gitHubClient.Git.Tree.GetRecursive(repositoryId, "HEAD");
@@ -158,7 +158,7 @@ namespace XRealiSE_Crawler
             }
             catch (AbuseException e)
             {
-                Write("--- AbuseException! Waiting {0} seconds --- ", e.RetryAfterSeconds);
+                Write("--- AbuseException! Waiting {0} seconds --- ", e.RetryAfterSeconds ?? 60);
                 Thread.Sleep(1000 * (e.RetryAfterSeconds ?? 60));
                 if (!afterException)
                     return await GetFileContents(repositoryId, sha, true);
@@ -192,7 +192,7 @@ namespace XRealiSE_Crawler
             }
             catch (AbuseException e)
             {
-                Write("--- AbuseException! Waiting {0} seconds --- ", e.RetryAfterSeconds);
+                Write("--- AbuseException! Waiting {0} seconds --- ", e.RetryAfterSeconds ?? 60);
                 Thread.Sleep(1000 * (e.RetryAfterSeconds ?? 60));
                 if (!afterException)
                     return await SearchCode(request, true);
@@ -419,6 +419,7 @@ namespace XRealiSE_Crawler
             }
         }
 
+        private int _databaseAge;
         private async Task CrawlRecursive(int from, int to, string extra)
         {
             Write("Crawling sizes from {0} to {1}, ", from, to);
@@ -472,6 +473,16 @@ namespace XRealiSE_Crawler
 
                     await _databaseConnection.SaveChangesAsync();
                     WriteLine("Database Changes Saved.");
+
+                    //The EntityFramework implementation is not made for long living objects, the crawler runs hours to days
+                    //this can lead to a huge RAM usage, recreating the databaseConnection every 1000 crawled repositories
+                    //cancels that behavior
+                    if (_databaseAge++ == 10)
+                    {
+                        _databaseConnection.Dispose();
+                        _databaseConnection = new DatabaseConnection();
+                        _databaseAge = 0;
+                    }
 
                     if (++request.Page <= 10)
                         result = await SearchCode(request);

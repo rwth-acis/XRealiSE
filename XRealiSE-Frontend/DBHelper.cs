@@ -127,9 +127,12 @@ namespace XRealiSE_Frontend
 
             searchString = regexUnwanted.Replace(searchString, "").ToLower();
 
-            List<long> foundRepos = connection.SearchIndex.FromSqlRaw(
+            List<SearchIndex> foundReposSI = connection.SearchIndex.FromSqlRaw(
                 "SELECT * FROM SearchIndex WHERE MATCH (SearchString) AGAINST (\"" + searchString +
-                "\" IN NATURAL LANGUAGE MODE);").Select(s => s.GitHubRepositoryId).ToList();
+                "\" IN NATURAL LANGUAGE MODE);").ToList();
+
+            List<long> foundRepos = foundReposSI.Select(r => r.GitHubRepositoryId).ToList();
+
 
             long[] resultSet = OrderAndFilterItems(connection, foundRepos.ToArray(), order, orderAttribute, filters,
                 filterEuqalities, filterValue);

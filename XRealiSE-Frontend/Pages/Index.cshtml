@@ -186,35 +186,44 @@
         </nav>
         @for (int i = 0; i >= 0 && i < Model.ResultSubSet.Length; i++)
         {
-            <div class="container border m-2">
-                <div class="row m-2">
-                    <div class="col-6">
-                        <b style="font-size: large">
-                            <a href="/@Model.SearchKey/@(Model.Start + 1)/@Model.ResultSubSet[i].GitHubRepositoryId" target="_blank">@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name</a>
-                        </b>
-                    </div>
-                    <div class="col align-bottom">
-                        @Model.ResultSubSet[i].ForksCount Forks
-                    </div>
-                    <div class="col align-bottom">
-                        @Model.ResultSubSet[i].StargazersCount Stars
-                    </div>
-                </div>
-                <div class="m-2">
-                    @Model.ResultSubSet[i].Description
-                </div>
-                <div class="row m-2">
-                    <div class="col">
-                        @Model.ResultSubSet[i].License
-                    </div>
-                    <div class="col">
-                        Created @Model.ResultSubSet[i].CreatedAt.ToString()
-                    </div>
-                    <div class="col">
-                        Last commit @Model.ResultSubSet[i].PushedAt
-                    </div>
-                </div>
+    <div class="container border m-2">
+        <div class="row m-2">
+            <div class="col-6">
+                <b style="font-size: large">
+                    <a href="/@Model.SearchKey/@(Model.Start + 1)/@Model.ResultSubSet[i].GitHubRepositoryId" target="_blank">@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name</a>
+                </b>
             </div>
+            <div class="col align-bottom">
+                @Model.ResultSubSet[i].ForksCount Forks
+            </div>
+            <div class="col align-bottom">
+                @Model.ResultSubSet[i].StargazersCount Stars
+            </div>
+        </div>
+        <div class="m-2">
+            @Model.ResultSubSet[i].Description
+        </div>
+        <div class="row m-2">
+            <div class="col">
+                @Model.ResultSubSet[i].License
+            </div>
+            <div class="col">
+                Created @Model.ResultSubSet[i].CreatedAt.ToString()
+            </div>
+            <div class="col">
+                Last commit @Model.ResultSubSet[i].PushedAt
+            </div>
+        </div>
+        @if (Model.ResultSubSet[i].ImageUrl != null)
+        {
+            <div class="m-2">
+                <img src ="@Model.ResultSubSet[i].ImageUrl" height="100" />
+            </div>
+        }
+        <div class="m-2">
+            @string.Join(' ',Model.ResultExtraData[i])
+        </div>
+    </div>
         }
         <nav>
             <ul class="pagination justify-content-center flex-wrap">

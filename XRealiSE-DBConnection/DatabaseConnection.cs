@@ -16,7 +16,7 @@ namespace XRealiSE_DBConnection
     {
         public static string DatabaseConnectionString;
         private static bool _fullTextChecked;
-        private readonly Dictionary<string, long> _generatedKeywords;
+        private static readonly Dictionary<string, long> GeneratedKeywords = new Dictionary<string, long>();
         private readonly Dictionary<string, Keyword> _generatedKeywordsUncached;
 
         /// <inheritdoc />
@@ -33,7 +33,6 @@ namespace XRealiSE_DBConnection
             if (DatabaseConnectionString == null)
                 throw new InvalidOperationException("DatabaseConnectionString must be set before initialising objects");
 
-            _generatedKeywords = new Dictionary<string, long>();
             _generatedKeywordsUncached = new Dictionary<string, Keyword>();
 
             Database.EnsureCreated();
@@ -75,7 +74,7 @@ namespace XRealiSE_DBConnection
             // is extremely slow.
             if (!keyWordCache) return;
 
-            foreach (Keyword keyword in Keywords) _generatedKeywords.Add(keyword.Word, keyword.KeywordId);
+            foreach (Keyword keyword in Keywords) GeneratedKeywords.Add(keyword.Word, keyword.KeywordId);
         }
 
         public DbSet<GitHubRepository> GitHubRepositories { get; set; }
@@ -87,7 +86,7 @@ namespace XRealiSE_DBConnection
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            //optionsBuilder.UseLazyLoadingProxies();
+            optionsBuilder.UseLazyLoadingProxies();
             optionsBuilder.UseMySQL(DatabaseConnectionString);
         }
 
@@ -159,9 +158,9 @@ namespace XRealiSE_DBConnection
         {
             long existingKeywordId = -1;
             Keyword existingKeyword = null;
-            if (_generatedKeywords.ContainsKey(keyword)) // If that keyword exists in the DB
+            if (GeneratedKeywords.ContainsKey(keyword)) // If that keyword exists in the DB
             {
-                existingKeywordId = _generatedKeywords[keyword];
+                existingKeywordId = GeneratedKeywords[keyword];
             }
             else if (_generatedKeywordsUncached.ContainsKey(keyword))
             {
@@ -202,7 +201,7 @@ namespace XRealiSE_DBConnection
         private void MoveGeneratedKeywords()
         {
             foreach ((string key, Keyword value) in _generatedKeywordsUncached)
-                _generatedKeywords.Add(key, value.KeywordId);
+                GeneratedKeywords.Add(key, value.KeywordId);
             _generatedKeywordsUncached.Clear();
         }
 
