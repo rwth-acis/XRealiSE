@@ -45,7 +45,7 @@ namespace XRealiSE_DBConnection
                 using MySqlConnection connection = new MySqlConnection(DatabaseConnectionString);
                 connection.Open();
 
-                MySqlDataReader reader = new MySqlCommand("SHOW INDEX FROM searchindex;", connection).ExecuteReader();
+                MySqlDataReader reader = new MySqlCommand("SHOW INDEX FROM SearchIndex;", connection).ExecuteReader();
 
                 // Check if the fulltext index exists
                 while (reader.Read())
@@ -61,7 +61,7 @@ namespace XRealiSE_DBConnection
                 {
                     MySqlCommand commandCreateFulltext =
                         new MySqlCommand(
-                            "ALTER TABLE searchindex ADD FULLTEXT INDEX SearchIndex (SearchString);",
+                            "ALTER TABLE SearchIndex ADD FULLTEXT INDEX SearchIndex (SearchString);",
                             connection);
                     commandCreateFulltext.ExecuteNonQuery();
                 }
@@ -74,7 +74,7 @@ namespace XRealiSE_DBConnection
                 connection2.Open();
 
                 MySqlDataReader reader2 =
-                    new MySqlCommand("SHOW INDEX FROM githubrepositories;", connection2).ExecuteReader();
+                    new MySqlCommand("SHOW INDEX FROM GitHubRepositories;", connection2).ExecuteReader();
 
                 // Check if the fulltext index exists
                 while (reader2.Read())
@@ -90,7 +90,7 @@ namespace XRealiSE_DBConnection
                 {
                     MySqlCommand commandCreateFulltext =
                         new MySqlCommand(
-                            "ALTER TABLE githubrepositories ADD FULLTEXT INDEX DescriptionIndex (Description);",
+                            "ALTER TABLE GitHubRepositories ADD FULLTEXT INDEX DescriptionIndex (Description);",
                             connection2);
                     commandCreateFulltext.ExecuteNonQuery();
                 }

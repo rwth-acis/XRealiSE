@@ -105,7 +105,7 @@ namespace XRealiSE_Frontend
             {
                 _versionFilters = new ReadOnlyDictionary<long, string>(connection.Keywords
                     .FromSqlRaw(
-                        "SELECT DISTINCT w.* FROM keywords w JOIN keywordinrepositories i ON w.KeywordID = i.KeywordID WHERE i.Type = 8;")
+                        "SELECT DISTINCT w.* FROM Keywords w JOIN KeywordInRepositories i ON w.KeywordID = i.KeywordID WHERE i.Type = 8;")
                     .ToList().OrderBy(k => k.Word)
                     .ToDictionary(k => k.KeywordId, k => k.Word));
 
@@ -160,7 +160,7 @@ namespace XRealiSE_Frontend
                 foundReposSi = connection.SearchIndex.FromSqlRaw(
                     "SELECT i.*, MATCH (i.SearchString) AGAINST (\"" + searchString +
                     "\" IN NATURAL LANGUAGE MODE) AS scorei, MATCH (r.Description) AGAINST (\"" + searchString +
-                    "\" IN NATURAL LANGUAGE MODE) AS scored FROM SearchIndex i JOIN githubrepositories r ON i.gitHubRepositoryID = r.gitHubRepositoryID HAVING scorei > 0 OR scored > 0 ORDER BY scorei * (r.StargazersCount+1) * scored " +
+                    "\" IN NATURAL LANGUAGE MODE) AS scored FROM SearchIndex i JOIN GitHubRepositories r ON i.gitHubRepositoryID = r.gitHubRepositoryID HAVING scorei > 0 OR scored > 0 ORDER BY scorei * (r.StargazersCount+1) * scored " +
                     (order == 0 ? "DESC" : "ASC") + ";").ToList();
             else
                 foundReposSi = connection.SearchIndex.FromSqlRaw(
