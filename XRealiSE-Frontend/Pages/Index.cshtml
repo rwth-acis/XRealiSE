@@ -237,7 +237,14 @@
                 @if (Model.ResultSubSet[i].ImageUrl != null)
                 {
                     <div class="m-2">
-                        <img src="@Model.ResultSubSet[i].ImageUrl" height="150"/>
+                        @if (Model.ResultSubSet[i].ImageUrl.StartsWith("http:") || Model.ResultSubSet[i].ImageUrl.StartsWith("https:"))
+                        {
+                            <img src="@Model.ResultSubSet[i].ImageUrl" height="150"/>
+                        }
+                        else
+                        {
+                            <img src="https://github.com/@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name/raw/master/@(Model.ResultSubSet[i].ImageUrl.TrimStart('.').TrimStart('/'))" height="150"/>
+                        }
                     </div>
                 }
                 <div class="m-2">

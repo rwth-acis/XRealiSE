@@ -152,7 +152,7 @@ namespace XRealiSE_Frontend.Pages
             }
         }
 
-        internal string Highlight(string text, string searchstring)
+        public string Highlight(string text, string searchstring)
         {
             if (text == null)
                 return "";

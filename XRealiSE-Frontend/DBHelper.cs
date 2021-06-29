@@ -140,7 +140,7 @@ namespace XRealiSE_Frontend
             return OrderItems(query.ToList(), order, orderAttribute).Select(repo => repo.GitHubRepositoryId).ToArray();
         }
 
-        internal static async Task<int> Search(DatabaseConnection connection, string searchString, int order,
+        internal static int Search(DatabaseConnection connection, string searchString, int order,
             int orderAttribute,
             bool[] filters, int[] filterEuqalities, string[] filterValue, long[] selectedVersions,
             int? parentSearch = null)
@@ -164,9 +164,10 @@ namespace XRealiSE_Frontend
                     (order == 0 ? "DESC" : "ASC") + ";").ToList();
             else
                 foundReposSi = connection.SearchIndex.FromSqlRaw(
-                    "SELECT i.*, MATCH (SearchString) AGAINST (\"" + searchString +
-                    "\" IN NATURAL LANGUAGE MODE) AS scorei, MATCH (r.Description) AGAINST (\"" + searchString +
-                    "\" IN NATURAL LANGUAGE MODE) AS scored FROM SearchIndex i HAVING scorei > 0 OR scored > 0;").ToList();
+                        "SELECT i.*, MATCH (SearchString) AGAINST (\"" + searchString +
+                        "\" IN NATURAL LANGUAGE MODE) AS scorei, MATCH (r.Description) AGAINST (\"" + searchString +
+                        "\" IN NATURAL LANGUAGE MODE) AS scored FROM SearchIndex i HAVING scorei > 0 OR scored > 0;")
+                    .ToList();
 
             List<long> foundRepos = foundReposSi.Select(r => r.GitHubRepositoryId).ToList();
 

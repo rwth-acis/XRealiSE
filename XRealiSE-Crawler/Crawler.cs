@@ -367,7 +367,7 @@ namespace XRealiSE_Crawler
                     Write("[NoReadme]");
 
                 Match imagematch = Regex.Match(readme,
-                    @"(?i)!\[[^\]]*]\((https?:[^\s<>)]*.(?:png|jpe?g|gif)\??[^\s)<>]?)\)");
+                    @"(?i)!\[[^\]]*]\(([^\s<>()]*.(?:png|jpe?g|gif)\??[^\s)<>]?)\)");
                 if (imagematch.Success)
                 {
                     gitHubRepository.ImageUrl = imagematch.Groups[1].Captures[0].Value;
