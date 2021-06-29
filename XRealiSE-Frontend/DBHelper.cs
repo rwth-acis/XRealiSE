@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -23,9 +24,13 @@ namespace XRealiSE_Frontend
 
         public static ConcurrentDictionary<int, SearchResult> SearchResults;
 
+        private static ReadOnlyDictionary<long, string> _versionFilters;
+        private static DateTime _versionFiltersAge;
+
         static DbHelper()
         {
             SearchResults = new ConcurrentDictionary<int, SearchResult>();
+            _versionFiltersAge = new DateTime(1, 1, 1);
             Rnd = new Random();
         }
 
@@ -92,9 +97,27 @@ namespace XRealiSE_Frontend
             return repository => true;
         }
 
+        internal static ReadOnlyDictionary<long, string> GetVersionFilters(DatabaseConnection connection)
+        {
+            if (_versionFiltersAge.CompareTo(DateTime.Now.AddHours(1)) > 0)
+                _versionFilters = null;
+            if (_versionFilters == null)
+            {
+                _versionFilters = new ReadOnlyDictionary<long, string>(connection.Keywords
+                    .FromSqlRaw(
+                        "SELECT DISTINCT w.* FROM keywords w JOIN keywordinrepositories i ON w.KeywordID = i.KeywordID WHERE i.Type = 8;")
+                    .ToList().OrderBy(k => k.Word)
+                    .ToDictionary(k => k.KeywordId, k => k.Word));
+
+                _versionFiltersAge = DateTime.Now;
+            }
+
+            return _versionFilters;
+        }
+
         private static long[] OrderAndFilterItems(DatabaseConnection connection, long[] rawResult, int order,
             int orderAttribute,
-            bool[] filters, int[] filterEuqalities, string[] filterValue)
+            bool[] filters, int[] filterEuqalities, string[] filterValue, long[] selectedVersions)
         {
             IQueryable<GitHubRepository> query =
                 connection.GitHubRepositories.Where(r => rawResult.Contains(r.GitHubRepositoryId));
@@ -110,12 +133,16 @@ namespace XRealiSE_Frontend
                         //ignored -- wrong parameter input in formular, then ignore that filter argument
                     }
 
+            if (selectedVersions.Length > 0)
+                query = query.Where(repo =>
+                    repo.KeywordInRepositories.Any(i => selectedVersions.Contains(i.KeywordId)));
+
             return OrderItems(query.ToList(), order, orderAttribute).Select(repo => repo.GitHubRepositoryId).ToArray();
         }
 
         internal static async Task<int> Search(DatabaseConnection connection, string searchString, int order,
             int orderAttribute,
-            bool[] filters, int[] filterEuqalities, string[] filterValue, bool matchAllWords = false,
+            bool[] filters, int[] filterEuqalities, string[] filterValue, long[] selectedVersions,
             int? parentSearch = null)
         {
             Task.Factory.StartNew(CleanupOldSearches);
@@ -127,20 +154,30 @@ namespace XRealiSE_Frontend
 
             searchString = regexUnwanted.Replace(searchString, "").ToLower();
 
-            List<SearchIndex> foundReposSI = connection.SearchIndex.FromSqlRaw(
-                "SELECT * FROM SearchIndex WHERE MATCH (SearchString) AGAINST (\"" + searchString +
-                "\" IN NATURAL LANGUAGE MODE);").ToList();
+            List<SearchIndex> foundReposSi;
 
-            List<long> foundRepos = foundReposSI.Select(r => r.GitHubRepositoryId).ToList();
+            if (orderAttribute == 10)
+                foundReposSi = connection.SearchIndex.FromSqlRaw(
+                    "SELECT i.*, MATCH (i.SearchString) AGAINST (\"" + searchString +
+                    "\" IN NATURAL LANGUAGE MODE) AS scorei, MATCH (r.Description) AGAINST (\"" + searchString +
+                    "\" IN NATURAL LANGUAGE MODE) AS scored FROM SearchIndex i JOIN githubrepositories r ON i.gitHubRepositoryID = r.gitHubRepositoryID HAVING scorei > 0 OR scored > 0 ORDER BY scorei * (r.StargazersCount+1) * scored " +
+                    (order == 0 ? "DESC" : "ASC") + ";").ToList();
+            else
+                foundReposSi = connection.SearchIndex.FromSqlRaw(
+                    "SELECT i.*, MATCH (SearchString) AGAINST (\"" + searchString +
+                    "\" IN NATURAL LANGUAGE MODE) AS scorei, MATCH (r.Description) AGAINST (\"" + searchString +
+                    "\" IN NATURAL LANGUAGE MODE) AS scored FROM SearchIndex i HAVING scorei > 0 OR scored > 0;").ToList();
+
+            List<long> foundRepos = foundReposSi.Select(r => r.GitHubRepositoryId).ToList();
 
 
             long[] resultSet = OrderAndFilterItems(connection, foundRepos.ToArray(), order, orderAttribute, filters,
-                filterEuqalities, filterValue);
+                filterEuqalities, filterValue, selectedVersions);
 
             stopwatch.Stop();
 
             int dbSearchId = SaveSearch(connection, searchString, OrderingToString(order, orderAttribute),
-                resultSet.Length, stopwatch.ElapsedMilliseconds, matchAllWords,
+                resultSet.Length, stopwatch.ElapsedMilliseconds, string.Join(',', selectedVersions),
                 FilterToString(filters, filterEuqalities, filterValue), parentSearch);
 
             SearchResult result = new SearchResult(searchString, resultSet, order, orderAttribute, dbSearchId);
@@ -153,7 +190,7 @@ namespace XRealiSE_Frontend
         }
 
         private static int SaveSearch(DatabaseConnection connection, string searchString, string order, int resultSize,
-            long duration, bool matchAll, string filter = "",
+            long duration, string selectedVersions, string filter = "",
             int? parentSearch = null)
         {
             Search s = new Search
@@ -164,7 +201,7 @@ namespace XRealiSE_Frontend
                 SearchOrdering = order,
                 SearchResultSize = resultSize,
                 SearchDuration = duration,
-                SearchMatchAll = matchAll,
+                SelectedVersions = selectedVersions,
                 SearchTime = DateTime.Now
             };
             connection.Searches.Add(s);
@@ -190,7 +227,7 @@ namespace XRealiSE_Frontend
                     break;
             }
 
-            if (order == 0)
+            if (order == 0 && orderAttribute != 10)
                 data.Reverse();
             return data.ToArray();
         }
@@ -200,6 +237,9 @@ namespace XRealiSE_Frontend
             string text = "";
             switch (orderAttribute)
             {
+                case 10:
+                    text += "Relevance";
+                    break;
                 case 1:
                     text += "ForksCount ";
                     break;
@@ -283,11 +323,25 @@ namespace XRealiSE_Frontend
             });
             connection.SaveChanges();
 
+
+            List<GitHubRepository> result = connection.GitHubRepositories.Where(repo =>
+                SearchResults[searchKey].ResultSet.Skip(itemsperpage * page).Take(itemsperpage)
+                    .Contains(repo.GitHubRepositoryId)).ToList();
+
+            long[] orderingInfo = SearchResults[searchKey].ResultSet.Skip(itemsperpage * page).Take(itemsperpage)
+                .ToArray();
+            GitHubRepository[] orderedResult = new GitHubRepository[result.Count];
+
+            for (int i = 0; i < result.Count; i++)
+                orderedResult[i] = result.Find(repo => repo.GitHubRepositoryId == orderingInfo[i]);
+            return orderedResult;
             // order the partial result (skip pages, take pagesize) again because the where does not preserve order.
+            /*
             return OrderItems(connection.GitHubRepositories.Where(repo =>
                     SearchResults[searchKey].ResultSet.Skip(itemsperpage * page).Take(itemsperpage)
                         .Contains(repo.GitHubRepositoryId)).ToList(), SearchResults[searchKey].Order,
                 SearchResults[searchKey].OrderAttribute);
+            */
         }
     }
 }

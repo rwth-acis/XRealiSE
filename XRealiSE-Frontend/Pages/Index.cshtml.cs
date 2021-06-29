@@ -3,11 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using XRealiSE_DBConnection;
 using XRealiSE_DBConnection.data;
@@ -26,6 +27,7 @@ namespace XRealiSE_Frontend.Pages
             _logger = logger;
             _connection = connection;
             ResultsPerPage = 25;
+            OrderAttribute = 10;
         }
 
         [BindProperty] public int ResultsPerPage { get; }
@@ -33,20 +35,29 @@ namespace XRealiSE_Frontend.Pages
         [BindProperty] public int SearchKey { get; set; }
         [BindProperty] public int Start { get; set; }
         [BindProperty] public GitHubRepository[] ResultSubSet { get; set; }
-        [BindProperty] public string[][] ResultExtraData { get; set; }
-        [BindProperty] public int SearchType { get; set; }
+        [BindProperty] public string[][][] ResultExtraData { get; set; }
         [BindProperty] public int Order { get; set; }
         [BindProperty] public int OrderAttribute { get; set; }
         [BindProperty] public int? ParentSearch { get; set; }
         [BindProperty] public bool[] FilterActive { get; set; }
         [BindProperty] public int[] FilterEquality { get; set; }
         [BindProperty] public string[] FilterValue { get; set; }
+        [BindProperty] public List<SelectListItem> VersionFilters { get; set; }
+        [BindProperty] public List<long> SelectedVersionFilters { get; set; }
 
-        private void getRepoExtraData()
+        private void LoadVersionFilters()
         {
-            ResultExtraData = new string[ResultSubSet.Length][];
+            VersionFilters = new List<SelectListItem>();
+            foreach (KeyValuePair<long, string> keyValuePair in DbHelper.GetVersionFilters(_connection))
+                VersionFilters.Add(new SelectListItem(keyValuePair.Value, keyValuePair.Key.ToString()));
+        }
+
+        private void GetRepoExtraData()
+        {
+            ResultExtraData = new string[ResultSubSet.Length][][];
             for (int i = 0; i < ResultSubSet.Length; i++)
             {
+                ResultExtraData[i] = new string[2][];
                 List<string> versions = new List<string>();
 
                 versions.AddRange(ResultSubSet[i].KeywordInRepositories
@@ -55,6 +66,7 @@ namespace XRealiSE_Frontend.Pages
 
                 List<string> keymatches = new List<string>();
 
+                /*
                 foreach (string searchword in DbHelper.SearchResults[SearchKey].SearchString.Split(' '))
                 {
                     List<Keyword> kw = _connection.Keywords.FromSqlRaw(
@@ -64,9 +76,10 @@ namespace XRealiSE_Frontend.Pages
                         .ToList();
 
                     keymatches.AddRange(kw.Select(k => k.Word));
-                }
+                }*/
 
-                ResultExtraData[i] = versions.Concat(keymatches).ToArray();
+                ResultExtraData[i][0] = versions.ToArray();
+                ResultExtraData[i][1] = keymatches.ToArray();
             }
         }
 
@@ -95,16 +108,22 @@ namespace XRealiSE_Frontend.Pages
             if (DbHelper.SearchResults.ContainsKey(SearchKey))
             {
                 ResultSubSet = DbHelper.GetRepos(Start, ResultsPerPage, SearchKey, _connection);
-                getRepoExtraData();
+                GetRepoExtraData();
             }
             else if (SearchKey != -1)
+            {
                 SearchKey = -3;
+            }
+
+            LoadVersionFilters();
             _connection.Dispose();
+
             return null;
         }
 
         public void OnPost()
         {
+            LoadVersionFilters();
             Start = 0;
             if (Searchstring != null)
             {
@@ -114,21 +133,47 @@ namespace XRealiSE_Frontend.Pages
                 Task<int> searchtask =
                     Task.Run(
                         () => DbHelper.Search(_connection, Searchstring, Order, OrderAttribute, FilterActive,
-                            FilterEquality, FilterValue, SearchType == 1,
+                            FilterEquality, FilterValue, SelectedVersionFilters.ToArray(),
                             ParentSearch), token);
                 if (searchtask.Wait(500000))
                 {
                     SearchKey = searchtask.Result;
                     ResultSubSet = DbHelper.GetRepos(Start, ResultsPerPage, SearchKey, _connection);
-                    getRepoExtraData();
+                    GetRepoExtraData();
+                    LoadVersionFilters();
                     _connection.Dispose();
                     return;
                 }
 
+                LoadVersionFilters();
                 _connection.Dispose();
                 tokenSource.Cancel();
                 SearchKey = -2;
             }
+        }
+
+        internal string Highlight(string text, string searchstring)
+        {
+            if (text == null)
+                return "";
+
+            string[] highlightwords = searchstring.Split(' ');
+
+            if (highlightwords.Contains("mark"))
+            {
+                string[] tempwords = new string[highlightwords.Length];
+                tempwords[0] = "mark";
+                int pos = 1;
+                foreach (string highlightword in highlightwords) tempwords[pos++] = highlightword;
+
+                highlightwords = tempwords;
+            }
+
+
+            foreach (string word in highlightwords.Where(w => w.Length > 3))
+                text = Regex.Replace(text, word, "<mark><u>" + word.ToUpper() + "</u></mark>", RegexOptions.IgnoreCase);
+
+            return text;
         }
     }
 }

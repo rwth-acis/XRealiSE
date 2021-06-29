@@ -41,6 +41,7 @@ namespace XRealiSE_DBConnection
             // we use the "classic" MySqlConnection
             if (!_fullTextChecked)
             {
+                bool fulltextsearch = false;
                 using MySqlConnection connection = new MySqlConnection(DatabaseConnectionString);
                 connection.Open();
 
@@ -51,22 +52,51 @@ namespace XRealiSE_DBConnection
                     if (reader.GetString("Key_name") == "SearchIndex" &&
                         reader.GetString("Column_name") == "SearchString" &&
                         reader.GetString("Index_type") == "FULLTEXT")
-                        _fullTextChecked = true;
+                        fulltextsearch = true;
 
                 reader.Close();
 
                 // if the fulltext index was not found add it
-                if (!_fullTextChecked)
+                if (!fulltextsearch)
                 {
                     MySqlCommand commandCreateFulltext =
                         new MySqlCommand(
                             "ALTER TABLE searchindex ADD FULLTEXT INDEX SearchIndex (SearchString);",
                             connection);
                     commandCreateFulltext.ExecuteNonQuery();
-                    _fullTextChecked = true;
                 }
 
                 connection.Close();
+
+                bool fulltextrepo = false;
+
+                using MySqlConnection connection2 = new MySqlConnection(DatabaseConnectionString);
+                connection2.Open();
+
+                MySqlDataReader reader2 =
+                    new MySqlCommand("SHOW INDEX FROM githubrepositories;", connection2).ExecuteReader();
+
+                // Check if the fulltext index exists
+                while (reader2.Read())
+                    if (reader2.GetString("Key_name") == "DescriptionIndex" &&
+                        reader2.GetString("Column_name") == "Description" &&
+                        reader2.GetString("Index_type") == "FULLTEXT")
+                        fulltextrepo = true;
+
+                reader2.Close();
+
+                // if the fulltext index was not found add it
+                if (!fulltextrepo)
+                {
+                    MySqlCommand commandCreateFulltext =
+                        new MySqlCommand(
+                            "ALTER TABLE githubrepositories ADD FULLTEXT INDEX DescriptionIndex (Description);",
+                            connection2);
+                    commandCreateFulltext.ExecuteNonQuery();
+                }
+
+                connection2.Close();
+                _fullTextChecked = true;
             }
 
 

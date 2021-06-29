@@ -33,7 +33,7 @@ namespace XRealiSE_DBConnection.data
         [Required] public int SearchResultSize { get; set; }
 
         [Required] public long SearchDuration { get; set; }
-        [Required] public bool SearchMatchAll { get; set; }
+        [Required] public string SelectedVersions { get; set; }
 
         [ForeignKey("ParentSearch")] public int? ParentSearchId { get; set; }
 

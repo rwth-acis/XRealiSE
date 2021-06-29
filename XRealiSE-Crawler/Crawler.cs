@@ -23,11 +23,13 @@ namespace XRealiSE_Crawler
 {
     internal class Crawler
     {
-        private DatabaseConnection _databaseConnection;
         private readonly GitHubClient _gitHubClient;
         private readonly Dictionary<KeywordInRepository.KeywordInRepositoryType, BasicExtractor> _keywordExtractors;
         private readonly RepositoryContentsClient _repositoryContentsClient;
         private List<long> _crawledRepos;
+
+        private int _databaseAge;
+        private DatabaseConnection _databaseConnection;
         private int _rateLimit;
         private int _searchLimit;
 
@@ -388,12 +390,12 @@ namespace XRealiSE_Crawler
 
                 // If there are multiple unity Projects within a repository - get every version information.
                 foreach (TreeItem item in tree.Tree.Where(item =>
-                    item.Path.EndsWith("ProjectSettings/ProjectVersion.txt", StringComparison.Ordinal)))
+                    item.Path.EndsWith("ProjectVersion.txt", StringComparison.Ordinal)))
                 {
                     string contents = await GetFileContents(repo.Id, item.Sha);
-                    Match m = Regex.Match(contents, "^m_EditorVersion: (.*)$");
+                    Match m = Regex.Match(contents, "m_EditorVersion: (.*)");
                     if (m.Success)
-                        versions.Add(m.Groups[1].Captures[0].Value);
+                        versions.Add(m.Groups[1].Captures[0].Value.Trim());
                 }
 
 
@@ -419,7 +421,6 @@ namespace XRealiSE_Crawler
             }
         }
 
-        private int _databaseAge;
         private async Task CrawlRecursive(int from, int to, string extra)
         {
             Write("Crawling sizes from {0} to {1}, ", from, to);
