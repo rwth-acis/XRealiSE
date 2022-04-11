@@ -1,21 +1,48 @@
 ﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
 
+
 a.navbar-brand {
     text-align: center;
     white-space: normal;
     word-break: break-all;
 }
 
-/* Provide sufficient contrast against white background */
+.display-4 {
+    color: #282d3f;
+    font-family: "Impact Condensed";
+    font-size: 100px;
+    /*text-shadow: 2px 2px #ffffff;*/
+}
 
-a { color: #0366d6; }
+.display-5 {
+    color: #282d3f;
+    font-family: "Microsoft Sans Serif";
+    font-size: 20px;
+    padding-top: 0;
+    margin-top: 0;
+    padding-bottom: 40px;
+}
+
+/* Provide sufficient contrast against white background */
+a {
+    color: #0366d6;
+}
 
 .btn-primary {
-    background-color: #ffdebd;
-    border-color: #ffdebd;
-    color: #000;
+    background-color: #ffddb1;
+    border-color: #ffddb1;
+    color: #282d3f;
 }
+
+.btn-primary:hover {
+     background-color: #f0ece8;
+     border-color: #f0ece8;
+     outline: none;
+     box-shadow: none;
+     color: #282d3f;
+     font-weight: bold;
+ }
 
 .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
     background-color: #1b6ec2;
@@ -23,8 +50,10 @@ a { color: #0366d6; }
     color: #fff;
 }
 
-.accordion {
-    background-color: #ffdebd;
+
+.accordion-item {
+    background: linear-gradient(to right, #ffc7b1 0%, #ffddb1 100%);
+    box-shadow: 2px 2px 5px #00000;
 }
 
 .flush-headingOne {
@@ -65,7 +94,7 @@ html {
 body {
     /* Margin bottom by footer height */
     margin-bottom: 60px;
-    background: linear-gradient(to right, #ff9966 0%, #ffff99 100%);
+    background: linear-gradient(to right, #f16e4b 0%, #f1c05f 100%);
 }
 
 .footer {
