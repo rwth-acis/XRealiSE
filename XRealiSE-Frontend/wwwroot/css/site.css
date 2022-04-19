@@ -1,23 +1,63 @@
 ﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
 
-
 a.navbar-brand {
     text-align: center;
     white-space: normal;
     word-break: break-all;
+    border-color: rgba(0, 0, 0, 0);
+    display: flex;
 }
 
+.gradient-text {
+    background: linear-gradient(to right, #f16e4b 0%, #f18450 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-family: "Impact Condensed";
+    font-size: 40px;
+    padding-top: 0;
+    margin-top: 0;
+    text-align: left;
+}
+
+.brand-text {
+    color: #282d3f;
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 20px;
+    padding: 0;
+    padding-left: 10px;
+    margin: 0;
+    text-align: left;
+    position: relative;
+    top: 23px;
+}
+
+/*Header Font*/
 .display-4 {
     color: #282d3f;
     font-family: "Impact Condensed";
     font-size: 100px;
-    /*text-shadow: 2px 2px #ffffff;*/
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0;
+    padding: 0;
+    padding-top: 100px;
 }
 
+/*Header small Font*/
+.display-3 {
+    color: #282d3f;
+    font-family: "Impact Condensed";
+    font-size: 50px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0;
+    padding: 0;
+    padding-top: 100px;
+}
+
+/*Sub-Header Font*/
 .display-5 {
     color: #282d3f;
-    font-family: "Microsoft Sans Serif";
+    font-family: 'Archivo Narrow', sans-serif;
     font-size: 20px;
     padding-top: 0;
     margin-top: 0;
@@ -25,43 +65,120 @@ a.navbar-brand {
 }
 
 /* Provide sufficient contrast against white background */
+/*Link*/
 a {
-    color: #0366d6;
+    color: #fbf6f1;
+    text-decoration:none;
 }
 
+/*Button style*/
 .btn-primary {
+    font-size: 32px;
     background-color: #ffddb1;
     border-color: #ffddb1;
     color: #282d3f;
+    font-family: 'Archivo Narrow', sans-serif;
+    text-align: left;
+    border-radius: 10px;
+    /*font-weight: bold;*/
 }
 
+/*Button hover style*/
 .btn-primary:hover {
-     background-color: #f0ece8;
-     border-color: #f0ece8;
-     outline: none;
-     box-shadow: none;
-     color: #282d3f;
-     font-weight: bold;
- }
+    background-color: #fff1df;
+    border-color: #fff1df;
+    outline: none;
+    box-shadow: none;
+    color: #282d3f;
+    font-weight: bold;
+}
+
+/*Icon shadow*/
+.shadow-lg {
+    text-shadow: 2px 1px 5px rgba(0, 0, 0, 0.3);
+}
+
+/*Input field style*/
+.form-control-lg {
+    background: linear-gradient(to right, #fbf6f1 0%, #f9f5f2 100%);
+    border-color: rgba(0, 0, 0, 0);
+    font-size: 32px;
+    font-family: 'Archivo Narrow', sans-serif;
+    border-radius: 10px;
+}
+
+/*Accordion style*/
+.accordion-button {
+    font-size: 20px;
+    background: linear-gradient(to right, #ffc7b1 0%, #ffddb1 100%);
+    border-color: rgba(0, 0, 0, 0);
+    color: #282d3f;
+    font-family: 'Archivo Narrow', sans-serif;
+}
+
+    /*Accordion hover style*/
+    .accordion-button:hover {
+        background: linear-gradient(to right, #f7f1ea 0%, #fff1df 100%);
+        border-color: rgba(0, 0, 0, 0);
+        outline: 0 !important;
+        color: #282d3f;
+        font-weight: bold;
+    }
+
+    /*Accordion open style*/
+    .accordion-button:not(.collapsed) {
+        background: linear-gradient(to right, #f7f1ea 0%, #fff1df 100%);
+        border-color: rgba(0, 0, 0, 0);
+        outline: 0 !important;
+        color: #282d3f;
+        font-weight: bold;
+    }
 
 .nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-    background-color: #1b6ec2;
-    border-color: #1861ac;
-    color: #fff;
+    color: 282d3f;
 }
 
 
 .accordion-item {
     background: linear-gradient(to right, #ffc7b1 0%, #ffddb1 100%);
-    box-shadow: 2px 2px 5px #00000;
+    border-color: rgba(0, 0, 0, 0);
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+    border-radius: 0px;
 }
 
-.flush-headingOne {
-    /*background: linear-gradient(to right, #ffdebd 0%, #ffffcc 100%);
-    border-color: #ffdebd;
-    color: #000;*/
+.navbar-nav {
+    color: #282d3f;
+    font-family: 'Archivo Narrow', sans-serif;
+    font-size: 20px;
+    background: rgba(0, 0, 0, 0);
+    border-color: rgba(0, 0, 0, 0);
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0);
 }
 
+.d-sm-inline {
+    background: rgba(0, 0, 0, 0);
+    border-color: rgba(0, 0, 0, 0);
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0);
+}
+
+.navbar-expand-sm {
+    background: linear-gradient(to right, #ffc7b1 0%, #ffddb1 100%);
+    border-color: rgba(0, 0, 0, 0);
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+}
+
+.nav-item {
+    margin-right: 20px;
+}
+
+    .nav-item:hover {
+        font-weight: bold;
+    }
+
+.text-dark {
+    color: #282d3f !important;
+}
 /* Sticky footer styles
 -------------------------------------------------- */
 html {
@@ -72,11 +189,20 @@ html {
     html { font-size: 16px; }
 }
 
-.border-top { border-top: 1px solid #e5e5e5; }
+.text-muted {
+    color: #282d3f !important;
+    font-family: 'Archivo Narrow', sans-serif;
+}
 
-.border-bottom { border-bottom: 1px solid #e5e5e5; }
+.border-top {
+    border-top: 5px solid rgba(0, 0, 0, 0);
+}
 
-.box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05); }
+.border-bottom {
+    border-bottom: 0px solid rgba(0, 0, 0, 0);
+}
+
+.box-shadow { box-shadow: 0 .25rem .75rem rgba(0, 0, 0, 0); }
 
 button.accept-policy {
     font-size: 1rem;
@@ -93,8 +219,9 @@ html {
 
 body {
     /* Margin bottom by footer height */
-    margin-bottom: 60px;
+    /*margin-bottom: 60px;*/
     background: linear-gradient(to right, #f16e4b 0%, #f1c05f 100%);
+    border-color:rgb(0,0,0,0);
 }
 
 .footer {
@@ -104,3 +231,4 @@ body {
     white-space: nowrap;
     width: 100%;
 }
+

@@ -4,16 +4,20 @@
 @{
     ViewData["Title"] = "XRealiSE";
 }
+<link href="https://use.fontawesome.com/releases/v5.0.1/css/all.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:ital,wght@1,700&display=swap" rel="stylesheet">
 
 <div class="text-center">
-<h1 class="display-4">XRealiSE</h1>
-<h2 class="display-5">
-    Search for mixed reality components on GitHub.
-</h2>
+    <h1 class="display-4">XRealiSE</h1>
+    <h2 class="display-5">
+        Search for Mixed Reality components on GitHub.
+    </h2>
     <div>
         <form method="post" asp-antiforgery="false">
             <div class="mb-3 row">
-                <div class="col-sm-9">
+                <div class="col-sm-10">
                     @if (DbHelper.SearchResults.Keys.Contains(Model.SearchKey))
                     {
                         <input class="form-control form-control-lg" asp-for="Searchstring" type="text" maxlength="255" value="@DbHelper.SearchResults[Model.SearchKey].SearchString" />
@@ -24,8 +28,10 @@
                         <input class="form-control form-control-lg" asp-for="Searchstring" type="text" maxlength="255" />
                     }
                 </div>
-                <div class="d-grid col-sm-3 mx-auto">
-                    <input type="submit" class="btn btn-primary btn-lg" name="search" value="Search" />
+                <div class="d-grid col-sm-2 mx-auto">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fa fa-play shadow-lg" aria-hidden="true"></i> &nbsp; Search
+                    </button>
                 </div>
             </div>
             <div class="accordion" id="accordionFlushExtendedSearch">
