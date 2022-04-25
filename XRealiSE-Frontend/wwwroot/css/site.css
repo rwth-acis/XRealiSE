@@ -109,10 +109,6 @@ a {
     font-weight: bold;
 }
 
-/*Icon shadow*/
-.shadow-lg {
-    text-shadow: 2px 1px 5px rgba(0, 0, 0, 0.3);
-}
 
 /*Input field style*/
 .form-control-lg {
