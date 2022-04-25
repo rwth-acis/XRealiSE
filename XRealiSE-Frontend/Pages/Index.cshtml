@@ -44,19 +44,19 @@
                     <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
                         <div class="accordion-body">
                             <!--
-                            <div class="mb-3 row">
-                                <label for="SearchType" class="col-sm-3 col-form-label">Search type</label>
-                                <div class="col-sm-9">
-                                    <select class="form-select" id="SearchType" asp-for="">
-                                        <option selected value="0">Match any word</option>
-                                        <option value="1">Match all words</option>
-                                    </select>
-                                </div>
-                            </div>
-                            -->
-                            <div class="mb-3 row">
+    <div class="mb-3 row">
+        <label for="SearchType" class="col-sm-3 col-form-label">Search type</label>
+        <div class="col-sm-9">
+            <select class="form-select" id="SearchType" asp-for="">
+                <option selected value="0">Match any word</option>
+                <option value="1">Match all words</option>
+            </select>
+        </div>
+    </div>
+    -->
+                            <div class="mb-2 row">
                                 <label for="Order" class="col-sm-3 col-form-label">
-                                    <b>Order by</b>
+                                    <b><div class="search-text">Order results by</div></b>
                                 </label>
                                 <div class="col-sm-5">
                                     <select class="form-select" id="Order" asp-for="OrderAttribute">
@@ -75,85 +75,85 @@
                                 </div>
                             </div>
                             <hr />
-                            <div class="mb-3 row">
-                                <div class="col-sm-12">
-                                    <b>Filter search</b>
-                                </div>
-                            </div>
-                            <div class="mb-3 row">
-                                <div class="col-sm-1">&nbsp;</div>
-                                <label for="filter1" class="col-sm-1 col-form-label">
-                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[0]"> Stars
+                            <div class="mb-1 row">
+                                <label for="Order" class="col-sm-3 col-form-label">
+                                    <b><div class="search-text">Filter search</div></b>
+                                </label>
+                                <label for="filter1" class="col-sm-3 col-form-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[0]"> <div class="search-text2">Stars</div>
                                 </label>
                                 <div class="col-sm-1">
                                     <select class="form-select" id="filter1" asp-for="FilterEquality[0]">
-                                        <option selected value="0">&gt;=</option>
-                                        <option value="1">&lt;=</option>
+                                        <option selected value="0">≥</option>
+                                        <option value="1">≤</option>
                                         <option value="2">=</option>
                                     </select>
                                 </div>
                                 <div class="col-sm-2">
-                                    <input class="form-control" asp-for="FilterValue[0]" value="0" type="number" maxlength="6" />
+                                    <input class="form-control-sm" asp-for="FilterValue[0]" value="0" type="number" maxlength="6" />
                                 </div>
-
-                                <div class="col-sm-2">&nbsp;</div>
-
-                                <label for="filter2" class="col-sm-1 col-form-label">
-                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[1]"> Forks
+                            </div>
+                            <div class="mb-1 row">
+                                <div class="col-sm-3">&nbsp;</div>
+                                <label for="filter2" class="col-sm-3 col-form-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[1]"> <div class="search-text2">Forks</div>
                                 </label>
                                 <div class="col-sm-1">
                                     <select class="form-select" id="filter2" asp-for="FilterEquality[1]">
-                                        <option selected value="0">&gt;=</option>
-                                        <option value="1">&lt;=</option>
+                                        <option selected value="0">≥</option>
+                                        <option value="1">≤</option>
                                         <option value="2">=</option>
                                     </select>
                                 </div>
                                 <div class="col-sm-2">
-                                    <input class="form-control" asp-for="FilterValue[1]" value="0" type="number" maxlength="6" />
+                                    <input class="form-control-sm" asp-for="FilterValue[1]" value="0" type="number" maxlength="6" />
                                 </div>
                             </div>
-                            <div class="mb-3 row">
-                                <label for="filter3" class="col-sm-2 col-form-label">
-                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[2]"> Project age
+                            <div class="mb-1 row">
+                                <div class="col-sm-3">&nbsp;</div>
+                                <label for="filter3" class="col-sm-3 col-form-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[2]"> <div class="search-text2">Project age</div>
                                 </label>
                                 <div class="col-sm-1">
                                     <select class="form-select" id="filter3" asp-for="FilterEquality[2]">
-                                        <option selected value="0">&gt;=</option>
-                                        <option value="1">&lt;=</option>
+                                        <option selected value="0">≥</option>
+                                        <option value="1">≤</option>
                                     </select>
                                 </div>
                                 <div class="col-sm-2">
-                                    <input class="form-control" asp-for="FilterValue[2]" value="0" type="number" maxlength="6" />
+                                    <input class="form-control-sm" asp-for="FilterValue[2]" value="0" type="number" maxlength="6" />
                                 </div>
                                 <div class="col-sm-1 col-form-label">
-                                    days.
+                                    <div class="search-text">days.</div>
                                 </div>
+                            </div>
 
-
-                                <label for="filter4" class="col-sm-2 col-form-label">
-                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[3]"> Last commit
+                            <div class="mb-1 row">
+                                <div class="col-sm-3">&nbsp;</div>
+                                <label for="filter4" class="col-sm-3 col-form-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[3]"> <div class="search-text2">Last commit</div>
                                 </label>
                                 <div class="col-sm-1">
                                     <select class="form-select" id="filter4" asp-for="FilterEquality[3]">
-                                        <option selected value="0">&gt;=</option>
-                                        <option value="1">&lt;=</option>
+                                        <option selected value="0">≥</option>
+                                        <option value="1">≤</option>
                                     </select>
                                 </div>
                                 <div class="col-sm-2">
-                                    <input class="form-control" asp-for="FilterValue[3]" value="0" type="number" maxlength="6" />
+                                    <input class="form-control-sm" asp-for="FilterValue[3]" value="0" type="number" maxlength="6" />
                                 </div>
                                 <div class="col-sm-1 col-form-label">
-                                    days ago.
+                                    <div class="search-text">days ago.</div>
                                 </div>
                             </div>
                             <hr />
-                            <div class="mb-3 row">
-                                <div class="col-sm-4">
+                            <div class="mb-2 row">
+                                <div class="col-sm-3">
 
-                                    <b>Restrict to Unity Version(s):</b>
+                                    <b><div class="search-text">Restrict to Unity Version(s):</div></b>
 
                                 </div>
-                                <div class="col-sm-8">
+                                <div class="col-sm-9">
                                     <select class="form-select" id="filterversion" size="8" multiple aria-label="multiple select size 8 version" asp-for="SelectedVersionFilters" asp-items="Model.VersionFilters">
                                     </select>
                                 </div>

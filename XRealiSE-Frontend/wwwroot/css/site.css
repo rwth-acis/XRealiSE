@@ -32,6 +32,23 @@ a.navbar-brand {
     top: 23px;
 }
 
+.search-text {
+    color: #282d3f;
+    font-family: 'Archivo Narrow', sans-serif;
+    text-align: left;
+    font-size: 20px;
+}
+
+.search-text2 {
+    color: #282d3f;
+    font-family: 'Archivo Narrow', sans-serif;
+    text-align: left;
+    margin-left: 40px;
+    margin-bottom: 2px;
+    font-size: 20px;
+}
+
+
 /*Header Font*/
 .display-4 {
     color: #282d3f;
@@ -80,7 +97,6 @@ a {
     font-family: 'Archivo Narrow', sans-serif;
     text-align: left;
     border-radius: 10px;
-    /*font-weight: bold;*/
 }
 
 /*Button hover style*/
@@ -106,6 +122,33 @@ a {
     font-family: 'Archivo Narrow', sans-serif;
     border-radius: 10px;
 }
+
+.form-control-sm {
+    background: linear-gradient(to right, #fbf6f1 0%, #f9f5f2 100%);
+    border-color: rgba(0, 0, 0, 0);
+    font-family: 'Archivo Narrow', sans-serif;
+}
+
+.form-select {
+    background: linear-gradient(to right, #fbf6f1 0%, #f9f5f2 100%);
+    border-color: rgba(0, 0, 0, 0);
+    font-family: 'Archivo Narrow', sans-serif;
+    -webkit-appearance: menulist;
+}
+
+.form-check-input {
+    background: linear-gradient(to right, #fbf6f1 0%, #f9f5f2 100%);
+    border-color: rgba(0, 0, 0, 0);
+    font-family: 'Archivo Narrow', sans-serif;
+    transform: scale(2);
+    position: relative;
+    float: left;
+}
+
+    .form-check-input:checked {
+        background: rgba(16, 18, 25, 0.5);
+        border-color: rgba(0, 0, 0, 0);
+    }
 
 /*Accordion style*/
 .accordion-button {
