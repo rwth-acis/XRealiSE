@@ -246,9 +246,9 @@ namespace XRealiSE_DBConnection
         /// <inheritdoc />
         public override int SaveChanges(bool acceptAllChangesOnSuccess)
         {
-            int returnvalue = base.SaveChanges(acceptAllChangesOnSuccess);
-            MoveGeneratedKeywords();
-            return returnvalue;
+            //int returnvalue = base.SaveChanges(acceptAllChangesOnSuccess);
+            //MoveGeneratedKeywords();
+            return 0;//returnvalue;
         }
 
         /// <inheritdoc />
