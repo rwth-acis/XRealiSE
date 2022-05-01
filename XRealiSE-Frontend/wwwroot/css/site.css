@@ -237,9 +237,94 @@ a {
     font-weight: bold;
     border-color: rgba(0, 0, 0, 0);
 }
-    /* Sticky footer styles
+
+.repository {
+    color: #282d3f;
+    font-family: 'Archivo Narrow', sans-serif;
+    background: linear-gradient(to right, #ffc7b1 0%, #ffddb1 100%);
+    border-color: rgba(0, 0, 0, 0);
+    font-size: 20px;
+    padding-bottom: 10px;
+}
+
+.repo-title {
+    text-shadow: 1.5px 1.5px 4px rgba(0, 0, 0, 0.2);
+    padding-top: 10px;
+    text-align: left;
+    font-weight: bold;
+}
+
+.repo-font {
+    font-family: 'Archivo Narrow', sans-serif;
+    color: #282d3f;
+    font-size: 30px;
+}
+
+.repo-font-small {
+    font-family: 'Archivo Narrow', sans-serif;
+    color: #282d3f;
+    font-size: 30px;
+    text-align: right;
+    padding-top: 10px;
+}
+
+.repo-font-description {
+    font-family: 'Archivo Narrow', sans-serif;
+    color: #282d3f;
+    font-size: 20px;
+    text-align: left;
+}
+
+.repo-font-date {
+    font-family: 'Archivo Narrow', sans-serif;
+    color: #282d3f;
+    font-size: 20px;
+    text-align: left;
+    padding-top: 0;
+    margin-top: -12px;
+    margin-left: 0.5rem;
+    margin-bottom: 40px;
+}
+
+.repo-font-info {
+    font-family: 'Archivo Narrow', sans-serif;
+    color: #282d3f;
+    font-size: 20px;
+    text-align: left;
+    padding-top: 0;
+    margin-top: -12px;
+    margin-left: 0.5rem;
+    margin-bottom: 40px;
+}
+
+.repo-icon {
+    color: #d97250;
+    text-shadow: 1.5px 1.5px 4px rgba(0, 0, 0, 0.2);
+}
+
+.repo-icon {
+    color: #d97250;
+    text-align: left;
+}
+
+.repo-line {
+    border: 1.5px solid #282d3f;
+    margin-top: 0.25rem;
+    opacity: 0.5;
+    border-radius: 2px;
+}
+
+.mark, mark {
+    background-color: rgba(0, 0, 0, 0);
+    color: #fbf6f1;
+}
+
+.u, u {
+    text-decoration: none;
+}
+/* Sticky footer styles
 -------------------------------------------------- */
-    html {
+html {
     font-size: 14px;
 }
 
