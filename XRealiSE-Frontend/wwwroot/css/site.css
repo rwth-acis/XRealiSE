@@ -218,9 +218,28 @@ a {
 .text-dark {
     color: #282d3f !important;
 }
-/* Sticky footer styles
+
+.pagination a {
+    color: #282d3f;
+    font-family: 'Archivo Narrow', sans-serif;
+    background-color: #ffd0b1;
+    border-color: rgba(0, 0, 0, 0);
+    font-size: 20px;
+}
+
+.page-item:first-child {
+    border-radius: 10px;
+}
+
+.pagination a:hover {
+    background-color: #fbf1e5;
+    color: #282d3f;
+    font-weight: bold;
+    border-color: rgba(0, 0, 0, 0);
+}
+    /* Sticky footer styles
 -------------------------------------------------- */
-html {
+    html {
     font-size: 14px;
 }
 
