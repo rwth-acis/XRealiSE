@@ -231,45 +231,65 @@
                         </div>
                     </div>
                     <hr class="repo-line">
-                    <div class="m-2 repo-font-description">
-                        <b>@Html.Raw(Model.Highlight(Model.ResultSubSet[i].Description, DbHelper.SearchResults[Model.SearchKey].SearchString))</b>
-                    </div>
-                    <div class="row repo-font-Date">
-                        Created @Model.ResultSubSet[i].CreatedAt.ToString(CultureInfo.InvariantCulture)
-                    </div>
+
+
                     <div class="row m-2">
-                        <div class="col">
-                            <i class="fa fa-refresh repo-icon-n" aria-hidden="true"></i>
-                        </div>
-                        <div class="col-3 repo-font-info">
-                            Last commit @Model.ResultSubSet[i].PushedAt
-                        </div>
-                        <div class="col-9">
-                        </div>
-                    </div>
-                    <div class="row m-2">
-                        <div class="col">
-                            <i class="fa fa-file-text repo-icon-n" aria-hidden="true"></i>
-                        </div>
-                        <div class="col-3 repo-font-info">
-                            @Model.ResultSubSet[i].License
-                        </div>
-                        <div class="col-9">
-                        </div>
-                    </div>
-                        @if (Model.ResultSubSet[i].ImageUrl != null)
-                        {
-                            <div class="m-2">
-                                @if (Model.ResultSubSet[i].ImageUrl.StartsWith("http:") || Model.ResultSubSet[i].ImageUrl.StartsWith("https:"))
-                                {
-                                    <img src="@Model.ResultSubSet[i].ImageUrl" height="150" />
-                                }
-                                else
-                                {
-                                    <img src="https://github.com/@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name/raw/master/@(Model.ResultSubSet[i].ImageUrl.TrimStart('.').TrimStart('/'))" height="150" />
-                                }
+
+                        <div class="col-7">
+
+                            <div class="m-2 repo-font-description">
+                                <b>@Html.Raw(Model.Highlight(Model.ResultSubSet[i].Description, DbHelper.SearchResults[Model.SearchKey].SearchString))</b>
                             </div>
-                        }
+
+                            <div class="row repo-font-Date">
+                                Created @Model.ResultSubSet[i].CreatedAt.ToString(CultureInfo.InvariantCulture)
+                            </div>
+
+                            <div class="row">
+                                <div class="col-3 repo-font-info bold">
+                                    &nbsp; &nbsp; <i class="fa fa-refresh repo-icon-n" aria-hidden="true"></i> &nbsp; Last Commit
+                                </div>
+
+                                <div class="col-3 repo-font-info">
+                                    @Model.ResultSubSet[i].PushedAt
+                                </div>
+
+                                <div class="col-6">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3 repo-font-info bold">
+                                    &nbsp; &nbsp; <i class="fa fa-file-text repo-icon-n" aria-hidden="true"></i>
+                                    &nbsp; License
+                                </div>
+
+                                <div class="col-3 repo-font-info">
+                                    @Model.ResultSubSet[i].License
+                                </div>
+
+                                <div class="col-6">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-5">
+                            @if (Model.ResultSubSet[i].ImageUrl != null)
+                            {
+                                <div class="m-2">
+                                    @if (Model.ResultSubSet[i].ImageUrl.StartsWith("http:") || Model.ResultSubSet[i].ImageUrl.StartsWith("https:"))
+                                    {
+                                        <img src="@Model.ResultSubSet[i].ImageUrl" height="150" />
+                                    }
+                                    else
+                                    {
+                                        <img src="https://github.com/@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name/raw/master/@(Model.ResultSubSet[i].ImageUrl.TrimStart('.').TrimStart('/'))" height="150" />
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                        
                         <div class="m-2">
                             @foreach (string version in Model.ResultExtraData[i][0])
                             {
