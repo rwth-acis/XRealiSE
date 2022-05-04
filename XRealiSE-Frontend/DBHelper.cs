@@ -143,7 +143,7 @@ namespace XRealiSE_Frontend
         internal static int Search(DatabaseConnection connection, string searchString, int order,
             int orderAttribute,
             bool[] filters, int[] filterEuqalities, string[] filterValue, long[] selectedVersions,
-            int? parentSearch = 0)
+            int? parentSearch = null)
         {
             Task.Factory.StartNew(CleanupOldSearches);
 
@@ -157,13 +157,11 @@ namespace XRealiSE_Frontend
             List<SearchIndex> foundReposSi;
 
             if (orderAttribute == 10)
-                /*foundReposSi = connection.SearchIndex.FromSqlRaw(
+                foundReposSi = connection.SearchIndex.FromSqlRaw(
                     "SELECT i.*, MATCH (i.SearchString) AGAINST (\"" + searchString +
                     "\" IN NATURAL LANGUAGE MODE) AS scorei, MATCH (r.Description) AGAINST (\"" + searchString +
                     "\" IN NATURAL LANGUAGE MODE) AS scored FROM SearchIndex i JOIN GitHubRepositories r ON i.gitHubRepositoryID = r.gitHubRepositoryID HAVING scorei > 0 OR scored > 0 ORDER BY scorei * (r.StargazersCount+1) * scored " +
-                    (order == 0 ? "DESC" : "ASC") + ";").ToList();*/
-                foundReposSi = connection.SearchIndex.FromSqlRaw(
-                    "SELECT i.* FROM SearchIndex i").ToList();
+                    (order == 0 ? "DESC" : "ASC") + ";").ToList();
             else
                 foundReposSi = connection.SearchIndex.FromSqlRaw(
                         "SELECT i.*, MATCH (SearchString) AGAINST (\"" + searchString +
@@ -194,7 +192,7 @@ namespace XRealiSE_Frontend
 
         private static int SaveSearch(DatabaseConnection connection, string searchString, string order, int resultSize,
             long duration, string selectedVersions, string filter = "",
-            int? parentSearch = 0)
+            int? parentSearch = null)
         {
             Search s = new Search
             {

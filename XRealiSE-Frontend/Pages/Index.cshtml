@@ -282,7 +282,7 @@
                                     }
                                     else
                                     {
-                                        <img src="https://github.com/@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name/raw/master/@(Model.ResultSubSet[i].ImageUrl.TrimStart('.').TrimStart('/'))" height="150" />
+                                        //<img src="https://github.com/@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name/raw/master/@(Model.ResultSubSet[i].ImageUrl.TrimStart('.').TrimStart('/'))" height="150" />
                                     }
                                 </div>
                             }
@@ -290,32 +290,32 @@
                     </div>
 
                         
-                        <div class="m-2">
-                            @foreach (string version in Model.ResultExtraData[i][0])
-                            {
-                                <span class="badge bg-info text-dark">@version</span>
-                            }
-                            @if (Model.ResultExtraData[i][1].Length > 0)
-                            {
-                                <div class="accordion" id="accordionFlushExtra-@i">
-                                    <div class="accordion-item">
-                                        <h4 class="accordion-header" id="flush-heading-@i">
-                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-@i" aria-expanded="false" aria-controls="flush-collapse-@i">
-                                                Found Classes
-                                            </button>
-                                        </h4>
-                                        <div id="flush-collapse-@i" class="accordion-collapse collapse" aria-labelledby="flush-heading-@i" data-bs-parent="#accordionFlushExample">
-                                            <div class="accordion-body">
-                                                @foreach (string keyword in Model.ResultExtraData[i][1])
-                                                {
-                                                    <span class="badge bg-secondary">@(keyword).cs</span>
-                                                }
-                                            </div>
+                    <div class="m-2">
+                        @foreach (string version in Model.ResultExtraData[i][0])
+                        {
+                            <span class="badge bg-info text-dark">@version</span>
+                        }
+                        @if (Model.ResultExtraData[i][1].Length > 0)
+                        {
+                            <div class="accordion" id="accordionFlushExtra-@i">
+                                <div class="accordion-item">
+                                    <h4 class="accordion-header" id="flush-heading-@i">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-@i" aria-expanded="false" aria-controls="flush-collapse-@i">
+                                            Found Classes
+                                        </button>
+                                    </h4>
+                                    <div id="flush-collapse-@i" class="accordion-collapse collapse" aria-labelledby="flush-heading-@i" data-bs-parent="#accordionFlushExample">
+                                        <div class="accordion-body">
+                                            @foreach (string keyword in Model.ResultExtraData[i][1])
+                                            {
+                                                <span class="badge bg-secondary">@(keyword).cs</span>
+                                            }
                                         </div>
                                     </div>
                                 </div>
-                            }
-                        </div>
+                            </div>
+                        }
+                    </div>
                     </div>
             }
             <nav>
