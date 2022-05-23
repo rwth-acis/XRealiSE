@@ -4,331 +4,376 @@
 @{
     ViewData["Title"] = "XRealiSE";
 }
+<link href="https://use.fontawesome.com/releases/v5.0.1/css/all.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.css"
+      rel="stylesheet" type='text/css'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:ital,wght@1,700&display=swap" rel="stylesheet">
 
 <div class="text-center">
-<h1 class="display-4">XRealiSE</h1>
-<p>Search for mixed reality components on GitHub.</p>
-<div>
-    <form method="post" asp-antiforgery="false">
-        <div class="mb-3 row">
-            <div class="col-sm-9">
-                @if (DbHelper.SearchResults.Keys.Contains(Model.SearchKey))
-                {
-                    <input class="form-control form-control-lg" asp-for="Searchstring" type="text" maxlength="255" value="@DbHelper.SearchResults[Model.SearchKey].SearchString"/>
-                    <input type="hidden" asp-for="ParentSearch" value="@DbHelper.SearchResults[Model.SearchKey].DatabaseId"/>
-                }
-                else
-                {
-                    <input class="form-control form-control-lg" asp-for="Searchstring" type="text" maxlength="255"/>
-                }
-            </div>
-            <div class="d-grid col-sm-3 mx-auto">
-                <input type="submit" class="btn btn-primary btn-lg" name="search" value="search"/>
-            </div>
-        </div>
-        <div class="accordion" id="accordionFlushExtendedSearch">
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingOne">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                        Advanced search
-                    </button>
-                </h2>
-                <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
-                    <div class="accordion-body">
-                        <!--
-                        <div class="mb-3 row">
-                            <label for="SearchType" class="col-sm-3 col-form-label">Search type</label>
-                            <div class="col-sm-9">
-                                <select class="form-select" id="SearchType" asp-for="">
-                                    <option selected value="0">Match any word</option>
-                                    <option value="1">Match all words</option>
-                                </select>
-                            </div>
-                        </div>
-                        -->
-                        <div class="mb-3 row">
-                            <label for="Order" class="col-sm-3 col-form-label">
-                                <b>Order by</b>
-                            </label>
-                            <div class="col-sm-5">
-                                <select class="form-select" id="Order" asp-for="OrderAttribute">
-                                    <option selected value="10">Relevance</option>
-                                    <option value="0">Stars</option>
-                                    <option value="1">Forks</option>
-                                    <option value="2">Created date</option>
-                                    <option value="3">Last commit date</option>
-                                </select>
-                            </div>
-                            <div class="col-sm-4">
-                                <select class="form-select" asp-for="Order">
-                                    <option selected value="0">Descending</option>
-                                    <option value="1">Ascending</option>
-                                </select>
-                            </div>
-                        </div>
-                        <hr/>
-                        <div class="mb-3 row">
-                            <div class="col-sm-12">
-                                <b>Filter search</b>
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <div class="col-sm-1">&nbsp;</div>
-                            <label for="filter1" class="col-sm-1 col-form-label">
-                                <input class="form-check-input" type="checkbox" asp-for="FilterActive[0]"> Stars
-                            </label>
-                            <div class="col-sm-1">
-                                <select class="form-select" id="filter1" asp-for="FilterEquality[0]">
-                                    <option selected value="0">&gt;=</option>
-                                    <option value="1">&lt;=</option>
-                                    <option value="2">=</option>
-                                </select>
-                            </div>
-                            <div class="col-sm-2">
-                                <input class="form-control" asp-for="FilterValue[0]" value="0" type="number" maxlength="6"/>
-                            </div>
-
-                            <div class="col-sm-2">&nbsp;</div>
-
-                            <label for="filter2" class="col-sm-1 col-form-label">
-                                <input class="form-check-input" type="checkbox" asp-for="FilterActive[1]"> Forks
-                            </label>
-                            <div class="col-sm-1">
-                                <select class="form-select" id="filter2" asp-for="FilterEquality[1]">
-                                    <option selected value="0">&gt;=</option>
-                                    <option value="1">&lt;=</option>
-                                    <option value="2">=</option>
-                                </select>
-                            </div>
-                            <div class="col-sm-2">
-                                <input class="form-control" asp-for="FilterValue[1]" value="0" type="number" maxlength="6"/>
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label for="filter3" class="col-sm-2 col-form-label">
-                                <input class="form-check-input" type="checkbox" asp-for="FilterActive[2]"> Project age
-                            </label>
-                            <div class="col-sm-1">
-                                <select class="form-select" id="filter3" asp-for="FilterEquality[2]">
-                                    <option selected value="0">&gt;=</option>
-                                    <option value="1">&lt;=</option>
-                                </select>
-                            </div>
-                            <div class="col-sm-2">
-                                <input class="form-control" asp-for="FilterValue[2]" value="0" type="number" maxlength="6"/>
-                            </div>
-                            <div class="col-sm-1 col-form-label">
-                                days.
-                            </div>
-
-
-                            <label for="filter4" class="col-sm-2 col-form-label">
-                                <input class="form-check-input" type="checkbox" asp-for="FilterActive[3]"> Last commit
-                            </label>
-                            <div class="col-sm-1">
-                                <select class="form-select" id="filter4" asp-for="FilterEquality[3]">
-                                    <option selected value="0">&gt;=</option>
-                                    <option value="1">&lt;=</option>
-                                </select>
-                            </div>
-                            <div class="col-sm-2">
-                                <input class="form-control" asp-for="FilterValue[3]" value="0" type="number" maxlength="6"/>
-                            </div>
-                            <div class="col-sm-1 col-form-label">
-                                days ago.
-                            </div>
-                        </div>
-                        <hr/>
-                        <div class="mb-3 row">
-                            <div class="col-sm-4">
-
-                                <b>Restrict to Unity Version(s):</b>
-
-                            </div>
-                            <div class="col-sm-8">
-                                <select class="form-select" id="filterversion" size="8" multiple aria-label="multiple select size 8 version" asp-for="SelectedVersionFilters" asp-items="Model.VersionFilters">
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </form>
-</div>
-<br/>
-@if (DbHelper.SearchResults.Keys.Contains(Model.SearchKey))
-{
+    <h1 class="display-4">XRealiSE</h1>
+    <h2 class="display-5">
+        Search for Mixed Reality components on GitHub.
+    </h2>
     <div>
-        <nav>
-            <ul class="pagination justify-content-center flex-wrap">
-                @if (Model.Start != 0)
-                {
-                    <li class="page-item">
-                        <a class="page-link" href="/@Model.SearchKey/@(Model.Start - 1)">Previous</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="page-item">
-                        <a class="page-link">Previous</a>
-                    </li>
-                }
-                @for (int i = 0; i * Model.ResultsPerPage <= DbHelper.SearchResults[Model.SearchKey].ResultSet.Length; i++)
-                {
-                    if (Model.Start == i)
+        <form method="post" asp-antiforgery="false">
+            <div class="mb-3 row">
+                <div class="col-sm-10">
+                    @if (DbHelper.SearchResults.Keys.Contains(Model.SearchKey))
                     {
-                        <li class="page-item">
-                            <a class="page-link alert-primary">@(i + 1)</a>
-                        </li>
+                        <input class="form-control form-control-lg" asp-for="Searchstring" type="text" maxlength="255" value="@DbHelper.SearchResults[Model.SearchKey].SearchString" />
+                        <input type="hidden" asp-for="ParentSearch" value="@DbHelper.SearchResults[Model.SearchKey].DatabaseId" />
                     }
-                    else if (i == 0 || i == DbHelper.SearchResults[Model.SearchKey].ResultSet.Length / Model.ResultsPerPage || Math.Abs(i - Model.Start) <= 5 || Math.Abs(i - Model.Start) <= 50 && (i + 1) % 10 == 0 ||
-                             (i + 1) % 50 == 0)
+                    else
                     {
-                        <li class="page-item">
-                            <a class="page-link" href="/@Model.SearchKey/@i">@(i + 1)</a>
-                        </li>
+                        <input class="form-control form-control-lg" asp-for="Searchstring" type="text" maxlength="255" />
                     }
-                }
-                @if (Model.Start < DbHelper.SearchResults[Model.SearchKey].ResultSet.Length / Model.ResultsPerPage)
-                {
-                    <li class="page-item">
-                        <a class="page-link" href="/@Model.SearchKey/@(Model.Start + 1)">Next</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="page-item">
-                        <a class="page-link">Next</a>
-                    </li>
-                }
-            </ul>
-        </nav>
-        @for (int i = 0; i >= 0 && i < Model.ResultSubSet.Length; i++)
-        {
-            <div class="container border m-2">
-                <div class="row m-2">
-                    <div class="col-6">
-                        <b style="font-size: large">
-                            <a href="/@Model.SearchKey/@(Model.Start + 1)/@Model.ResultSubSet[i].GitHubRepositoryId" target="_blank">@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name</a>
-                        </b>
-                    </div>
-                    <div class="col align-bottom">
-                        @Model.ResultSubSet[i].ForksCount Forks
-                    </div>
-                    <div class="col align-bottom">
-                        @Model.ResultSubSet[i].StargazersCount Stars
-                    </div>
                 </div>
-                <div class="m-2">
-                    <b>@Html.Raw(Model.Highlight(Model.ResultSubSet[i].Description, DbHelper.SearchResults[Model.SearchKey].SearchString))</b>
+                <div class="d-grid col-sm-2 mx-auto">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fa fa-play shadow-lg" aria-hidden="true"></i> &nbsp; Search
+                    </button>
                 </div>
-                <div class="row m-2">
-                    <div class="col">
-                        @Model.ResultSubSet[i].License
-                    </div>
-                    <div class="col">
-                        Created @Model.ResultSubSet[i].CreatedAt.ToString(CultureInfo.InvariantCulture)
-                    </div>
-                    <div class="col">
-                        Last commit @Model.ResultSubSet[i].PushedAt
-                    </div>
-                </div>
-                @if (Model.ResultSubSet[i].ImageUrl != null)
-                {
-                    <div class="m-2">
-                        @if (Model.ResultSubSet[i].ImageUrl.StartsWith("http:") || Model.ResultSubSet[i].ImageUrl.StartsWith("https:"))
-                        {
-                            <img src="@Model.ResultSubSet[i].ImageUrl" height="150"/>
-                        }
-                        else
-                        {
-                            <img src="https://github.com/@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name/raw/master/@(Model.ResultSubSet[i].ImageUrl.TrimStart('.').TrimStart('/'))" height="150"/>
-                        }
-                    </div>
-                }
-                <div class="m-2">
-                    @foreach (string version in Model.ResultExtraData[i][0])
-                    {
-                        <span class="badge bg-info text-dark">@version</span>
-                    }
-                    @if (Model.ResultExtraData[i][1].Length > 0)
-                    {
-                        <div class="accordion" id="accordionFlushExtra-@i">
-                            <div class="accordion-item">
-                                <h4 class="accordion-header" id="flush-heading-@i">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-@i" aria-expanded="false" aria-controls="flush-collapse-@i">
-                                        Found Classes
-                                    </button>
-                                </h4>
-                                <div id="flush-collapse-@i" class="accordion-collapse collapse" aria-labelledby="flush-heading-@i" data-bs-parent="#accordionFlushExample">
-                                    <div class="accordion-body">
-                                        @foreach (string keyword in Model.ResultExtraData[i][1])
-                                        {
-                                            <span class="badge bg-secondary">@(keyword).cs</span>
-                                        }
-                                    </div>
+            </div>
+            <div class="accordion" id="accordionFlushExtendedSearch">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="flush-headingOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
+                            Advanced search
+                        </button>
+                    </h2>
+                    <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#accordionFlushExample">
+                        <div class="accordion-body">
+                            <!--
+                            <div class="mb-3 row">
+                                <label for="SearchType" class="col-sm-3 col-form-label">Search type</label>
+                                <div class="col-sm-9">
+                                    <select class="form-select" id="SearchType" asp-for="">
+                                        <option selected value="0">Match any word</option>
+                                        <option value="1">Match all words</option>
+                                    </select>
+                                </div>
+                            </div>
+                            -->
+                            <div class="mb-2 row">
+                                <label for="Order" class="col-sm-3 col-form-label">
+                                    <b><div class="search-text">Order results by</div></b>
+                                </label>
+                                <div class="col-sm-5">
+                                    <select class="form-select" id="Order" asp-for="OrderAttribute">
+                                        <option selected value="10">Relevance</option>
+                                        <option value="0">Stars</option>
+                                        <option value="1">Forks</option>
+                                        <option value="2">Created date</option>
+                                        <option value="3">Last commit date</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-4">
+                                    <select class="form-select" asp-for="Order">
+                                        <option selected value="0">Descending</option>
+                                        <option value="1">Ascending</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="mb-1 row">
+                                <label for="Order" class="col-sm-3 col-form-label">
+                                    <b><div class="search-text">Filter search</div></b>
+                                </label>
+                                <label for="filter1" class="col-sm-3 col-form-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[0]"> <div class="search-text2">Stars</div>
+                                </label>
+                                <div class="col-sm-1">
+                                    <select class="form-select" id="filter1" asp-for="FilterEquality[0]">
+                                        <option selected value="0">≥</option>
+                                        <option value="1">≤</option>
+                                        <option value="2">=</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-2">
+                                    <input class="form-control-sm" asp-for="FilterValue[0]" value="0" type="number" maxlength="6" />
+                                </div>
+                            </div>
+                            <div class="mb-1 row">
+                                <div class="col-sm-3">&nbsp;</div>
+                                <label for="filter2" class="col-sm-3 col-form-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[1]"> <div class="search-text2">Forks</div>
+                                </label>
+                                <div class="col-sm-1">
+                                    <select class="form-select" id="filter2" asp-for="FilterEquality[1]">
+                                        <option selected value="0">≥</option>
+                                        <option value="1">≤</option>
+                                        <option value="2">=</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-2">
+                                    <input class="form-control-sm" asp-for="FilterValue[1]" value="0" type="number" maxlength="6" />
+                                </div>
+                            </div>
+                            <div class="mb-1 row">
+                                <div class="col-sm-3">&nbsp;</div>
+                                <label for="filter3" class="col-sm-3 col-form-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[2]"> <div class="search-text2">Project age</div>
+                                </label>
+                                <div class="col-sm-1">
+                                    <select class="form-select" id="filter3" asp-for="FilterEquality[2]">
+                                        <option selected value="0">≥</option>
+                                        <option value="1">≤</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-2">
+                                    <input class="form-control-sm" asp-for="FilterValue[2]" value="0" type="number" maxlength="6" />
+                                </div>
+                                <div class="col-sm-1 col-form-label">
+                                    <div class="search-text">days.</div>
+                                </div>
+                            </div>
+
+                            <div class="mb-1 row">
+                                <div class="col-sm-3">&nbsp;</div>
+                                <label for="filter4" class="col-sm-3 col-form-label">
+                                    <input class="form-check-input" type="checkbox" asp-for="FilterActive[3]"> <div class="search-text2">Last commit</div>
+                                </label>
+                                <div class="col-sm-1">
+                                    <select class="form-select" id="filter4" asp-for="FilterEquality[3]">
+                                        <option selected value="0">≥</option>
+                                        <option value="1">≤</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-2">
+                                    <input class="form-control-sm" asp-for="FilterValue[3]" value="0" type="number" maxlength="6" />
+                                </div>
+                                <div class="col-sm-1 col-form-label">
+                                    <div class="search-text">days ago.</div>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="mb-2 row">
+                                <div class="col-sm-3">
+
+                                    <b><div class="search-text">Restrict to Unity Version(s):</div></b>
+
+                                </div>
+                                <div class="col-sm-9">
+                                    <select class="form-select" id="filterversion" size="8" multiple aria-label="multiple select size 8 version" asp-for="SelectedVersionFilters" asp-items="Model.VersionFilters">
+                                    </select>
                                 </div>
                             </div>
                         </div>
-                    }
+                    </div>
                 </div>
             </div>
-        }
-        <nav>
-            <ul class="pagination justify-content-center flex-wrap">
-
-                @if (Model.Start != 0)
-                {
-                    <li class="page-item">
-                        <a class="page-link" href="/@Model.SearchKey/@(Model.Start - 1)">Previous</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="page-item">
-                        <a class="page-link">Previous</a>
-                    </li>
-                }
-                @for (int i = 0; i * Model.ResultsPerPage <= DbHelper.SearchResults[Model.SearchKey].ResultSet.Length; i++)
-                {
-                    if (Model.Start == i)
-                    {
-                        <li class="page-item">
-                            <a class="page-link alert-primary">@(i + 1)</a>
-                        </li>
-                    }
-                    else if (i == 0 || i == DbHelper.SearchResults[Model.SearchKey].ResultSet.Length / Model.ResultsPerPage || Math.Abs(i - Model.Start) <= 5 || Math.Abs(i - Model.Start) <= 50 && (i + 1) % 10 == 0 ||
-                             (i + 1) % 50 == 0)
-                    {
-                        <li class="page-item">
-                            <a class="page-link" href="/@Model.SearchKey/@i">@(i + 1)</a>
-                        </li>
-                    }
-                }
-                @if (Model.Start < DbHelper.SearchResults[Model.SearchKey].ResultSet.Length / Model.ResultsPerPage)
-                {
-                    <li class="page-item">
-                        <a class="page-link" href="/@Model.SearchKey/@(Model.Start + 1)">Next</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="page-item">
-                        <a class="page-link">Next</a>
-                    </li>
-                }
-            </ul>
-        </nav>
-        If you'd like to give feedback then consider filling out our <a href="https://limesurvey.tech4comp.dbis.rwth-aachen.de/index.php/368718?lang=en" target="_blank">feedback form</a>.
+        </form>
     </div>
-}
-else if (Model.SearchKey == -2)
-{
-    <div class="alert-danger">The search timed out - please try again using less words.</div>
-}
-else if (Model.SearchKey == -3)
-{
-    <div class="alert-danger">The search you requested is no longer available - please repeat your search.</div>
-}
+    <br />
+    @if (DbHelper.SearchResults.Keys.Contains(Model.SearchKey))
+    {
+        <div>
+            <nav>
+                <ul class="pagination justify-content-center flex-wrap">
+                    @if (Model.Start != 0)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="/@Model.SearchKey/@(Model.Start - 1)">Previous</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link">Previous</a>
+                        </li>
+                    }
+                    @for (int i = 0; i * Model.ResultsPerPage <= DbHelper.SearchResults[Model.SearchKey].ResultSet.Length; i++)
+                    {
+                        if (Model.Start == i)
+                        {
+                            <li class="page-item">
+                                <a class="page-link alert-primary">@(i + 1)</a>
+                            </li>
+                        }
+                        else if (i == 0 || i == DbHelper.SearchResults[Model.SearchKey].ResultSet.Length / Model.ResultsPerPage || Math.Abs(i - Model.Start) <= 5 || Math.Abs(i - Model.Start) <= 50 && (i + 1) % 10 == 0 ||
+                                 (i + 1) % 50 == 0)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="/@Model.SearchKey/@i">@(i + 1)</a>
+                            </li>
+                        }
+                    }
+                    @if (Model.Start < DbHelper.SearchResults[Model.SearchKey].ResultSet.Length / Model.ResultsPerPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="/@Model.SearchKey/@(Model.Start + 1)">Next</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link">Next</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+            @for (int i = 0; i >= 0 && i < Model.ResultSubSet.Length; i++)
+            {
+                <div class="container m-2 repository">
+                    <div class="row m-2">
+                        <div class="col-8 repo-title">
+                            <b style="font-size: large">
+                                <a class="repo-font" href="/@Model.SearchKey/@(Model.Start + 1)/@Model.ResultSubSet[i].GitHubRepositoryId" target="_blank">@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name</a>
+                            </b>
+                        </div>
+                        <div class="col-2 align-bottom repo-font-small">
+                            @Model.ResultSubSet[i].ForksCount <i class="fa fa-code-fork repo-icon" aria-hidden="true"></i>
+                        </div>
+                        <div class="col-2 align-bottom repo-font-small">
+                            @Model.ResultSubSet[i].StargazersCount <i class="fa fa-star repo-icon" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                    <hr class="repo-line">
+
+
+                    <div class="row m-2">
+
+                        <div class="col-7">
+
+                            <div class="m-2 repo-font-description">
+                                <b>@Html.Raw(Model.Highlight(Model.ResultSubSet[i].Description, DbHelper.SearchResults[Model.SearchKey].SearchString))</b>
+                            </div>
+
+                            <div class="row repo-font-Date">
+                                Created @Model.ResultSubSet[i].CreatedAt.ToString(CultureInfo.InvariantCulture)
+                            </div>
+
+                            <div class="row">
+                                <div class="col-3 repo-font-info bold">
+                                    &nbsp; &nbsp; <i class="fa fa-refresh repo-icon-n" aria-hidden="true"></i> &nbsp; Last Commit
+                                </div>
+
+                                <div class="col-3 repo-font-info">
+                                    @Model.ResultSubSet[i].PushedAt
+                                </div>
+
+                                <div class="col-6">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3 repo-font-info bold">
+                                    &nbsp; &nbsp; <i class="fa fa-file-text repo-icon-n" aria-hidden="true"></i>
+                                    &nbsp; License
+                                </div>
+
+                                <div class="col-3 repo-font-info">
+                                    @Model.ResultSubSet[i].License
+                                </div>
+
+                                <div class="col-6">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-5">
+                            @if (Model.ResultSubSet[i].ImageUrl != null)
+                            {
+                                <div class="m-2">
+                                    @if (Model.ResultSubSet[i].ImageUrl.StartsWith("http:") || Model.ResultSubSet[i].ImageUrl.StartsWith("https:"))
+                                    {
+                                        <img src="@Model.ResultSubSet[i].ImageUrl" height="150" />
+                                    }
+                                    else
+                                    {
+                                        //<img src="https://github.com/@Model.ResultSubSet[i].Owner/@Model.ResultSubSet[i].Name/raw/master/@(Model.ResultSubSet[i].ImageUrl.TrimStart('.').TrimStart('/'))" height="150" />
+                                    }
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                        
+                    <div class="m-2">
+                        @foreach (string version in Model.ResultExtraData[i][0])
+                        {
+                            <span class="badge bg-info text-dark">@version</span>
+                        }
+                        @if (Model.ResultExtraData[i][1].Length > 0)
+                        {
+                            <div class="accordion" id="accordionFlushExtra-@i">
+                                <div class="accordion-item">
+                                    <h4 class="accordion-header" id="flush-heading-@i">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapse-@i" aria-expanded="false" aria-controls="flush-collapse-@i">
+                                            Found Classes
+                                        </button>
+                                    </h4>
+                                    <div id="flush-collapse-@i" class="accordion-collapse collapse" aria-labelledby="flush-heading-@i" data-bs-parent="#accordionFlushExample">
+                                        <div class="accordion-body">
+                                            @foreach (string keyword in Model.ResultExtraData[i][1])
+                                            {
+                                                <span class="badge bg-secondary">@(keyword).cs</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    </div>
+            }
+            <nav>
+                <ul class="pagination justify-content-center flex-wrap">
+
+                    @if (Model.Start != 0)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="/@Model.SearchKey/@(Model.Start - 1)">Previous</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link">Previous</a>
+                        </li>
+                    }
+                    @for (int i = 0; i * Model.ResultsPerPage <= DbHelper.SearchResults[Model.SearchKey].ResultSet.Length; i++)
+                    {
+                        if (Model.Start == i)
+                        {
+                            <li class="page-item">
+                                <a class="page-link alert-primary">@(i + 1)</a>
+                            </li>
+                        }
+                        else if (i == 0 || i == DbHelper.SearchResults[Model.SearchKey].ResultSet.Length / Model.ResultsPerPage || Math.Abs(i - Model.Start) <= 5 || Math.Abs(i - Model.Start) <= 50 && (i + 1) % 10 == 0 ||
+                                 (i + 1) % 50 == 0)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="/@Model.SearchKey/@i">@(i + 1)</a>
+                            </li>
+                        }
+                    }
+                    @if (Model.Start < DbHelper.SearchResults[Model.SearchKey].ResultSet.Length / Model.ResultsPerPage)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="/@Model.SearchKey/@(Model.Start + 1)">Next</a>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="page-item">
+                            <a class="page-link">Next</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+            <div class="display-5">
+                If you'd like to give feedback then consider filling out our <a href="https://limesurvey.tech4comp.dbis.rwth-aachen.de/index.php/368718?lang=en" target="_blank">feedback form</a>.
+            </div>
+        </div>
+    }
+    else if (Model.SearchKey == -2)
+    {
+        <div class="alert-danger"><div class="display-5">The search timed out - please try again using less words.</div></div>
+    }
+    else if (Model.SearchKey == -3)
+    {
+        <div class="alert-danger"><div class="display-5">The search you requested is no longer available - please repeat your search.</div></div>
+    }
 </div>
