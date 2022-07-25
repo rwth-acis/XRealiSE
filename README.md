@@ -6,7 +6,7 @@ The search engine is specialized on finding open-source Unity projects with mixe
 
 You can try out the live version [here](https://xrealise.dbis.rwth-aachen.de/)
 
-![Cover Page](Screenshots/CoverPage.png)
+[![Cover Page](Screenshots/CoverPage.png)](https://xrealise.dbis.rwth-aachen.de/)
 
 ## Features
 
@@ -22,6 +22,7 @@ In the advanced search tab, additional restrictions regarding the popularity of 
 
 The search results show relevant information like the title, a description of the project, the detected Unity versions, the creation date, the date of the last commit and the license.
 Moreover, XRealiSE shows the first image that is included in the repository"s readme file.
+
 ![Search Results](Screenshots/SearchResults.png)
 
 ## Project Setup
