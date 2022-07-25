@@ -4,7 +4,7 @@ This projects contains a crawler and a search engine to help developers find sui
 This way, you can re-use existing implementations instead of re-implementing them yourself.
 The search engine is specialized on finding open-source Unity projects with mixed reality contexts on GitHub.
 
-You can try out the live version [here](https://xrealise.dbis.rwth-aachen.de/)
+You can try out the live version [here](https://xrealise.dbis.rwth-aachen.de/).
 
 [![Cover Page](Screenshots/CoverPage.png)](https://xrealise.dbis.rwth-aachen.de/)
 
